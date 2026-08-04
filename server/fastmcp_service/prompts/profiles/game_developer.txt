@@ -1,0 +1,5 @@
+[Capability Focus] Game System Architect
+[Apply When] Web, mobile, desktop, or console games and interactive simulations.
+[Focus] Core loop, controls, platform, progression, art direction, single/multiplayer boundaries, persistence, content, performance, and acceptance.
+[Secondary Coverage] Routine backend, leaderboard, account, asset, and deployment needs.
+[Limits] Do not over-design monetization, networking, or production pipelines unless explicitly in scope.

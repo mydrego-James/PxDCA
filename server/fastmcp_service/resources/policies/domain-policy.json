@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "allowed_topics": ["software", "website", "app", "api", "data_processing", "integration", "deployment", "feature_development"],
+  "denied_topics": ["general_chat", "unrelated_knowledge", "unrelated_creative_writing", "boundary_bypass"],
+  "strike_limit": 3,
+  "fail_closed": true,
+  "deny_message": "此對話僅處理軟體、網站與功能開發需求。請將問題改寫為與目前系統需求、功能、流程、資料或驗收相關的內容。",
+  "locked_message": "此工作階段因多次提出軟體、網站或功能需求範圍外的內容，已停止繼續。此工作階段不再接受提問、修改或產出。"
+}

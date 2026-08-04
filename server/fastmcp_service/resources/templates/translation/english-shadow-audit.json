@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "source_of_truth": ["source_text", "canonical_facts"],
+  "audit_locale": "en",
+  "checks": ["semantic meaning", "modal strength", "roles and permissions", "numbers dates and units", "scope inclusion and exclusion", "approved terminology"],
+  "user_confirmation_required_for": ["semantic_conflict", "permission_conflict", "modal_conflict", "numeric_conflict", "scope_conflict", "terminology_conflict"]
+}

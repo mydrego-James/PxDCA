@@ -1,0 +1,24 @@
+name: fastmcp
+
+services:
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+      MCP_PATH: /mcp
+      MCP_TRANSPORT: http
+      MCP_OUTPUT_ROOT: /srv/logicmcp/output
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8000}:8000"
+    volumes:
+      - "${LOGICMCP_LOG_DIR:-./logs}:/srv/logicmcp/logs"
+      - "${LOGICMCP_OUTPUT_DIR:-./output}:/srv/logicmcp/output"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1',8000),2); s.close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped

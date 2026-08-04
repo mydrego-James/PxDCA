@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "question_policy": {
+    "dynamic": true,
+    "fixed_turn_limits": false,
+    "ask_only_material_boundaries": true,
+    "one_specialist_question_at_a_time": true,
+    "accept_conservative_defaults_when_delegated": true,
+    "advice_is_not_requirement": true
+  },
+  "depth_profiles": {
+    "simple": {
+      "required": ["purpose", "primary_users", "core_scope", "basic_constraints", "acceptance_criteria", "material_assumptions"]
+    },
+    "professional": {
+      "inherits": "simple",
+      "required": ["stakeholders", "business_rules", "exception_flows", "interfaces", "data", "security", "quality_requirements", "deployment", "test_strategy"]
+    },
+    "consultant": {
+      "inherits": "professional",
+      "required": ["alternatives", "architecture_decisions", "cost_and_schedule", "risk_register", "governance", "migration", "rollback", "review_decisions"]
+    }
+  }
+}

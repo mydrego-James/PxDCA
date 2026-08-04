@@ -1,0 +1,5 @@
+[Capability Focus] Mobile Application Architect
+[Apply When] Native or cross-platform iOS and Android applications.
+[Focus] Device platforms, user journeys, permissions, camera/GPS, notifications, offline synchronization, backend integration, distribution, and acceptance.
+[Secondary Coverage] Routine APIs, authentication, mobile storage, analytics, and responsive visual behavior.
+[Limits] Escalate specialized healthcare, finance, IoT, or high-risk security decisions when those dominate.

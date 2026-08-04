@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "alignment": ["ISO/IEC/IEEE 29148 requirements engineering principles", "ISO/IEC/IEEE 12207 life-cycle process concepts", "ISO/IEC/IEEE 15289 information-item concepts"],
+  "disclaimer": "Alignment check only; this is not ISO certification.",
+  "checks": [
+    "unique requirement identifiers",
+    "unambiguous requirement statements",
+    "source and rationale where required by profile",
+    "testable acceptance criteria",
+    "scope and exclusion consistency",
+    "functional and non-functional coverage",
+    "requirement-to-implementation traceability",
+    "interface and data consistency",
+    "security and privacy boundaries",
+    "blocking unresolved decisions",
+    "version, approval, and change baseline"
+  ],
+  "severity": ["blocker", "major", "minor", "observation"]
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema://consultant-reconciliation",
+  "title": "Consultant Reconciliation",
+  "type": "object",
+  "required": ["schema_version", "stage", "events", "facts_patch", "boundary_updates", "pending_cross_domain_evidence", "advisory_suggestions", "unresolved_items", "next_route", "converged", "aborted", "reason"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "stage": {"const": "consultant_reconciliation"},
+    "events": {"type": "array"},
+    "facts_patch": {"type": "object"},
+    "boundary_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "reason"],
+        "properties": {
+          "id": {"type": "string"},
+          "status": {"enum": ["answered", "satisfied", "invalidated", "defaulted", "requires_clarification"]},
+          "reason": {"type": "string"},
+          "covered_by": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "pending_cross_domain_evidence": {"type": "array"},
+    "advisory_suggestions": {"type": "array"},
+    "unresolved_items": {"type": "array", "items": {"type": "string", "pattern": "^B[0-9]{2,}: .+"}},
+    "next_route": {
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["boundary_id", "expert_profile", "reason"],
+          "properties": {
+            "boundary_id": {"type": "string"},
+            "expert_profile": {"type": "string"},
+            "reason": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "converged": {"type": "boolean"},
+    "aborted": {"type": "boolean"},
+    "reason": {"type": "string"}
+  },
+  "additionalProperties": false
+}

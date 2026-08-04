@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema://interview-step",
+  "title": "LogicMCP Requirement Flow Step",
+  "description": "Compatibility entrypoint for one explicit consultant or specialist stage.",
+  "oneOf": [
+    {"$ref": "consultant-plan.schema.json"},
+    {"$ref": "specialist-turn.schema.json"},
+    {"$ref": "consultant-reconciliation.schema.json"}
+  ]
+}

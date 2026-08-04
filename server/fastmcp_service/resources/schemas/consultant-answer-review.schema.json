@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema://consultant-answer-review",
+  "title": "Unified Consultant Answer Review Patch",
+  "type": "object",
+  "required": ["schema_version", "stage", "active_question_id", "capability_profile", "focused_assessment", "cross_question_updates", "conflicts", "follow_up", "scope_extension_candidates"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "stage": {"const": "consultant_answer_review"},
+    "active_question_id": {"type": "string", "pattern": "^Q[1-9][0-9]*$"},
+    "capability_profile": {"type": "string", "minLength": 1},
+    "focused_assessment": {
+      "type": "object",
+      "required": ["status", "normalized_value", "evidence", "reason_summary"],
+      "properties": {
+        "status": {"enum": ["answered", "partially_answered", "needs_clarification", "defaulted", "conflict"]},
+        "normalized_value": {},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "reason_summary": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "cross_question_updates": {"type": "array"},
+    "conflicts": {"type": "array"},
+    "follow_up": {"type": ["object", "null"]},
+    "scope_extension_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "description", "evidence", "reason"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

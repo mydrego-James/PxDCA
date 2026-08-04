@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema://requirement-state",
+  "title": "Unified Consultant Requirement State 2.0",
+  "type": "object",
+  "required": ["schema_version", "topic", "selected_profile", "facts", "qa_items", "advisory_suggestions", "active_question_id", "pending_consultant_review", "scope_extension_candidates", "turn_count", "converged", "aborted"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "topic": {"type": "object"},
+    "selected_profile": {"type": "string"},
+    "facts": {"type": "object"},
+    "qa_items": {"type": "array"},
+    "advisory_suggestions": {"type": "array"},
+    "active_question_id": {"type": ["string", "null"]},
+    "pending_consultant_review": {"type": "array"},
+    "scope_extension_candidates": {"type": "array"},
+    "turn_count": {"type": "integer", "minimum": 0},
+    "converged": {"type": "boolean"},
+    "aborted": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

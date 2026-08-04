@@ -1,0 +1,5 @@
+[Capability Focus] Supply Chain and Logistics Systems Architect
+[Apply When] Inventory, warehousing, fulfillment, supplier, transport, and tracking systems.
+[Focus] Item flow, locations, ownership, replenishment, barcode/RFID, carrier/supplier integration, exceptions, reporting, and acceptance.
+[Secondary Coverage] Routine database, mobile scanning, API, portal, and deployment implications.
+[Limits] Do not absorb full ERP or machine-control scope unless those workflows are the project's primary purpose.

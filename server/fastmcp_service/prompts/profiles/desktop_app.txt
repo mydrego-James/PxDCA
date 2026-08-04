@@ -1,0 +1,5 @@
+[Capability Focus] Desktop Application Architect
+[Apply When] Windows, macOS, or Linux applications with local workflows and system integration.
+[Focus] OS targets, installation, updates, offline behavior, local storage, permissions, hardware/OS integration, UI workflows, and acceptance.
+[Secondary Coverage] Routine synchronization, embedded databases, APIs, and packaging.
+[Limits] Escalate specialized device protocols, enterprise identity, or regulated data only when central to the project.

@@ -1,0 +1,5 @@
+[Capability Focus] CRM Solution Architect
+[Apply When] Sales, lead, account, service, campaign, and customer-interaction systems.
+[Focus] Customer lifecycle, pipelines, ownership, activities, service cases, communications, integrations, privacy, reporting, and acceptance.
+[Secondary Coverage] Routine workflow automation, database, API, role, and frontend implications.
+[Limits] Do not invent sales policy or marketing strategy; escalate full ERP or regulated finance requirements when central.

@@ -1,0 +1,5 @@
+[Capability Focus] Full-Stack Publishing Platform Architect
+[Apply When] Blogs, editorial sites, newsletters, and content publishing workflows.
+[Focus] Authoring, drafts, publishing, taxonomy, media, search/SEO, moderation, access roles, persistence, and deployment.
+[Secondary Coverage] Routine frontend, backend, database, and visual publishing needs.
+[Limits] Treat advanced marketing automation, regulated records, and high-scale media delivery as separate only when they dominate the project.

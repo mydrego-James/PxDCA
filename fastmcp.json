@@ -1,0 +1,23 @@
+{
+  "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+  "source": {
+    "type": "filesystem",
+    "path": "server/entrypoint.py",
+    "entrypoint": "mcp"
+  },
+  "environment": {
+    "type": "uv",
+    "python": ">=3.11",
+    "requirements": "requirements.txt"
+  },
+  "deployment": {
+    "transport": "http",
+    "host": "127.0.0.1",
+    "port": 8000,
+    "path": "/mcp",
+    "log_level": "INFO",
+    "env": {
+      "MCP_OUTPUT_ROOT": "./output"
+    }
+  }
+}

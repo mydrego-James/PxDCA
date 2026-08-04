@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema://consultant-plan",
+  "title": "Complete Initial Requirement Plan",
+  "type": "object",
+  "required": ["schema_version", "stage", "selected_profile", "topic", "facts", "qa_items", "advisory_suggestions", "active_question_id", "converged", "reason"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "stage": {"const": "consultant_plan"},
+    "selected_profile": {"type": "string", "minLength": 1},
+    "topic": {
+      "type": "object",
+      "required": ["raw", "normalized", "language"],
+      "properties": {
+        "raw": {"type": "string", "minLength": 1},
+        "normalized": {"type": "string", "minLength": 1},
+        "language": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "facts": {"type": "object"},
+    "qa_items": {"type": "array", "minItems": 3, "maxItems": 15, "items": {"$ref": "#/$defs/qaItem"}},
+    "advisory_suggestions": {"type": "array"},
+    "active_question_id": {"type": ["string", "null"]},
+    "converged": {"type": "boolean"},
+    "reason": {"type": "string"}
+  },
+  "$defs": {
+    "option": {
+      "type": "object",
+      "required": ["key", "label"],
+      "properties": {"key": {"type": "string"}, "label": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "question": {
+      "type": "object",
+      "required": ["type", "text", "options"],
+      "properties": {
+        "type": {"enum": ["single_choice", "multi_choice", "yes_no", "fill_in"]},
+        "text": {"type": "string", "minLength": 1},
+        "options": {"type": "array", "items": {"$ref": "#/$defs/option"}}
+      },
+      "additionalProperties": false
+    },
+    "qaItem": {
+      "type": "object",
+      "required": ["id", "display_order", "dimension", "policy_dimensions", "capability_profile", "target_fact", "priority", "status", "question", "answer", "assessment", "follow_ups", "source_turn"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^Q[1-9][0-9]*$"},
+        "display_order": {"type": "integer", "minimum": 1},
+        "dimension": {"type": "string", "minLength": 1},
+        "policy_dimensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "capability_profile": {"type": "string", "minLength": 1},
+        "target_fact": {"type": "string", "minLength": 1},
+        "priority": {"type": "integer", "minimum": 1, "maximum": 10},
+        "status": {"enum": ["pending", "satisfied"]},
+        "question": {"$ref": "#/$defs/question"},
+        "answer": {"type": ["object", "null"]},
+        "assessment": {"type": ["object", "null"]},
+        "follow_ups": {"type": "array"},
+        "source_turn": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

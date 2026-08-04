@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://logicmcp.local/schemas/audit-draft-v1.json",
+  "title": "LogicMCP Audit Draft",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "stage",
+    "status",
+    "source_requirement_session_id",
+    "project_name",
+    "audit_basis",
+    "coverage",
+    "findings",
+    "blockers",
+    "conclusion",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "stage": {"const": "audit_draft"},
+    "status": {"const": "draft"},
+    "source_requirement_session_id": {"type": "string", "minLength": 1},
+    "project_name": {"type": "string", "minLength": 1},
+    "audit_basis": {"type": "array", "items": {"type": "string"}},
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "status", "evidence", "gap"],
+        "properties": {
+          "requirement_id": {"type": "string"},
+          "status": {"enum": ["covered", "partial", "missing", "conflict", "requires_confirmation"]},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "gap": {"type": "string"}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "type", "severity", "description", "recommendation", "requirement_ids"],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "type": {"enum": ["coverage", "conflict", "assumption", "scope", "traceability", "other"]},
+          "severity": {"enum": ["blocker", "major", "minor", "observation"]},
+          "description": {"type": "string"},
+          "recommendation": {"type": "string"},
+          "requirement_ids": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "conclusion": {"enum": ["draft_pending_review", "draft_blocked", "draft_ready_for_review"]},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,5 @@
+[Capability Focus] Data and AI Systems Architect
+[Apply When] Analytics, data pipelines, machine learning, forecasting, and decision-support systems.
+[Focus] Data sources, quality, volume, orchestration, training/inference, evaluation, dashboards, governance, deployment, and acceptance metrics.
+[Secondary Coverage] Routine databases, APIs, batch/stream processing, and user-facing analytical workflows.
+[Limits] Do not promise model quality without evidence; route regulated domain judgments to the appropriate domain expert.

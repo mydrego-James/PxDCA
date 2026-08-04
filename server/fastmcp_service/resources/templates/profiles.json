@@ -1,0 +1,102 @@
+{
+  "personal_website": {
+    "name": "Personal Website Architect",
+    "description": "A constraint template for rapidly converging personal website requirements.",
+    "prompt_file": "personal_website.txt"
+  },
+  "ecommerce": {
+    "name": "E-commerce System Expert",
+    "description": "A constraint template for rapidly converging e-commerce requirements.",
+    "prompt_file": "ecommerce.txt"
+  },
+  "blog": {
+    "name": "Blog Architect",
+    "description": "A constraint template for rapidly converging blog requirements.",
+    "prompt_file": "blog.txt"
+  },
+  "game_developer": {
+    "name": "Game Developer",
+    "description": "A constraint template for rapidly converging game development requirements.",
+    "prompt_file": "game_developer.txt"
+  },
+  "desktop_app": {
+    "name": "Desktop Software Engineer",
+    "description": "A constraint template for rapidly converging desktop application requirements.",
+    "prompt_file": "desktop_app.txt"
+  },
+  "mobile_app": {
+    "name": "Mobile App Developer",
+    "description": "A constraint template for rapidly converging mobile application requirements.",
+    "prompt_file": "mobile_app.txt"
+  },
+  "data_science": {
+    "name": "Data Science & Analytics Engineer",
+    "description": "A constraint template for rapidly converging data analytics or machine learning requirements.",
+    "prompt_file": "data_science.txt"
+  },
+  "database_architect": {
+    "name": "Database Architect",
+    "description": "A constraint template for rapidly converging database design and migration requirements.",
+    "prompt_file": "database_architect.txt"
+  },
+  "erp_consultant": {
+    "name": "ERP Implementation Consultant",
+    "description": "A constraint template for rapidly converging Enterprise Resource Planning (ERP) system requirements.",
+    "prompt_file": "erp_consultant.txt"
+  },
+  "crm_specialist": {
+    "name": "CRM System Specialist",
+    "description": "A constraint template for rapidly converging Customer Relationship Management (CRM) requirements.",
+    "prompt_file": "crm_specialist.txt"
+  },
+  "hris_expert": {
+    "name": "HR Information System Expert",
+    "description": "A constraint template for rapidly converging Human Resources (HR) system requirements.",
+    "prompt_file": "hris_expert.txt"
+  },
+  "msoffice_automation": {
+    "name": "MS Office Automation Expert",
+    "description": "A constraint template for rapidly converging MS Office add-in or VBA macro automation requirements.",
+    "prompt_file": "msoffice_automation.txt"
+  },
+  "mes_consultant": {
+    "name": "MES (Manufacturing Execution System) Consultant",
+    "description": "A constraint template for rapidly converging manufacturing and shop-floor control requirements.",
+    "prompt_file": "mes_consultant.txt"
+  },
+  "plc_scada_integrator": {
+    "name": "PLC / SCADA Integration Architect",
+    "description": "A constraint template for rapidly converging industrial automation and machine integration requirements.",
+    "prompt_file": "plc_scada_integrator.txt"
+  },
+  "cybersecurity_auditor": {
+    "name": "Cybersecurity Risk Assessor",
+    "description": "A constraint template for rapidly converging security auditing, access control, and compliance requirements.",
+    "prompt_file": "cybersecurity_auditor.txt"
+  },
+  "supply_chain_analyst": {
+    "name": "Supply Chain & Logistics System Analyst",
+    "description": "A constraint template for rapidly converging warehouse management (WMS) and logistics tracking requirements.",
+    "prompt_file": "supply_chain_analyst.txt"
+  },
+  "fintech_architect": {
+    "name": "Financial Systems Architect",
+    "description": "A constraint template for rapidly converging fintech, ledger, and payment gateway requirements.",
+    "prompt_file": "fintech_architect.txt"
+  },
+  "healthcare_it_specialist": {
+    "name": "Healthcare IT Solutions Expert",
+    "description": "A constraint template for rapidly converging medical, clinic, and patient record system requirements.",
+    "prompt_file": "healthcare_it_specialist.txt"
+  },
+  "iot_solutions_architect": {
+    "name": "IoT Systems Architect",
+    "description": "A constraint template for rapidly converging Internet of Things (IoT) edge and fleet management requirements.",
+    "prompt_file": "iot_solutions_architect.txt"
+  },
+  "api_integration_expert": {
+    "name": "Enterprise Integration Architect",
+    "description": "A constraint template for rapidly converging B2B API interfaces, EDI, and system-to-system messaging.",
+    "prompt_file": "api_integration_expert.txt"
+  }
+}

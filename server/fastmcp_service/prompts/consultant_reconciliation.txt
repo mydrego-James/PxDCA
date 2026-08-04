@@ -1,0 +1,8 @@
+[Maintenance-Only State Repair]
+This prompt is not part of the normal requirement interview. State 2.0 uses one Lead Requirement Consultant answer-review call per user answer.
+
+Use this contract only for an explicitly requested manual repair or migration of an inconsistent legacy session. Never invoke it automatically after a normal answer.
+
+The repair must preserve user evidence, stable QA ids, original question text, keyed options, and capability assignments. It may quarantine inconsistent data but may not invent user requirements.
+
+Return a repair proposal only. A deterministic validator must approve every mutation. Do not output Markdown, commentary, or code fences.
