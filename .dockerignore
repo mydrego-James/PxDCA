@@ -1,17 +1,5 @@
-.git
-.env
-.env.*
-gcp_key.json
-*gcp_key.json
-.TEST
-__pycache__
-*.pyc
-docs/history_dialogues
-docs/generated
-scratch
--temp
-tests
-logs/*
-!logs/__init__.py
-!logs/log_client.py
-data
+# The runtime image only needs the dependency manifest and Server package.
+**
+!requirements.txt
+!server/
+!server/**
