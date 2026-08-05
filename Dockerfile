@@ -1,10 +1,11 @@
 FROM python:3.11-slim
 
 WORKDIR /srv/logicmcp
-COPY requirements.txt ./
+COPY requirements.txt /srv/logicmcp/requirements.txt
 RUN python -m pip install --no-cache-dir -r requirements.txt
-COPY server ./server
-RUN python -m compileall -q server
+COPY server/ /srv/logicmcp/server/
+RUN mkdir -p /srv/logicmcp/logs /srv/logicmcp/output \
+    && python -m compileall -q /srv/logicmcp/server
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
