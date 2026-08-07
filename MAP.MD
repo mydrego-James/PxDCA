@@ -42,27 +42,18 @@ server/
    ├─ __main__.py
    ├─ server.py
    ├─ mcp_instance.py
+   ├─ public_tools.py
+   ├─ workflow_service.py
    ├─ prompts.py
    ├─ resources.py
    ├─ README.md
-   │
    ├─ prompts/
-   │  ├─ batch_audit_draft.txt
-   │  ├─ consultant_plan_review.txt
-   │  ├─ consultant_reconciliation.txt
-   │  ├─ discovery.txt
-   │  ├─ iso_audit_draft.txt
-   │  ├─ pm_contract_draft.txt
-   │  ├─ requirement_interview.txt
-   │  ├─ system_design_draft.txt
-   │  ├─ technical_alignment_draft.txt
+   │  ├─ *.txt
    │  └─ profiles/
    │     └─ *.txt
-   │
    ├─ resources/
    │  ├─ policies/
-   │  │  ├─ domain-policy.json
-   │  │  └─ profile-policy.json
+   │  │  └─ *.json
    │  ├─ schemas/
    │  │  └─ *.json
    │  └─ templates/
@@ -70,12 +61,8 @@ server/
    │     ├─ delivery/
    │     ├─ policies/
    │     ├─ specification/
-   │     │  ├─ consultant/
-   │     │  ├─ professional/
-   │     │  └─ simple/
    │     ├─ translation/
    │     └─ profiles.json
-   │
    ├─ tools/
    │  ├─ __init__.py
    │  ├─ audit_renderer.py
@@ -85,7 +72,9 @@ server/
    │  ├─ requirement_validator.py
    │  ├─ specification_renderer.py
    │  └─ README.md
-   │
+   ├─ tests/
+   │  ├─ __init__.py
+   │  └─ test_public_workflows.py
    └─ docs/
       ├─ contract-baseline.json
       ├─ IO_BOUNDARY.md
@@ -95,7 +84,7 @@ server/
          └─ minimal_workflow_client.py
 ```
 
-## Entry chains
+## Runtime entry chains
 
 ```text
 run.bat
@@ -120,14 +109,35 @@ compose.yaml
 > server/fastmcp_service/server.py:main()
 ```
 
-## Module links
+## MCP registration links
 
 ```text
 server.py
 > mcp_instance.py
+> public_tools.py
+```
+
+```text
+public_tools.py
+> generate_requirements
+> generate_architecture
+> run_audit
+> workflow_service.py
+```
+
+## Internal workflow links
+
+```text
+workflow_service.py
 > prompts.py
-> resources.py
-> tools/__init__.py
+> tools/requirement_validator.py
+> tools/draft_validator.py
+> tools/baseline_renderer.py
+> tools/audit_renderer.py
+> resources/policies/**
+> resources/templates/**
+> MCP_OUTPUT_ROOT
+> MCP_STATE_ROOT
 ```
 
 ```text
@@ -139,36 +149,8 @@ prompts.py
 ```
 
 ```text
-resources.py
-> resources/policies/*.json
-> resources/schemas/*.json
-```
-
-```text
-tools/__init__.py
-> tools/requirement_validator.py
-> tools/draft_validator.py
-> tools/specification_renderer.py
-> tools/audit_renderer.py
-> tools/baseline_renderer.py
-> resources/templates/profiles.json
-```
-
-```text
-tools/specification_renderer.py
-> tools/render_specification.py
-> resources/templates/specification/**
-```
-
-```text
 tools/requirement_validator.py
 > resources/policies/profile-policy.json
-```
-
-```text
-tools/render_specification.py
-> resources/schemas/specification-schema.json
-> resources/templates/specification/**
 ```
 
 ```text
@@ -181,15 +163,60 @@ tools/audit_renderer.py
 > resources/templates/audit/iso-aligned-audit.md
 ```
 
+## Workflow chains
+
 ```text
-tools/__init__.py
-> output/
+generate_requirements(q0)
+> discovery Prompt
+> MCP Sampling
+> consultant plan validator
+> MCP_STATE_ROOT/<session_id>.json
+> Q1..Qn
 ```
 
 ```text
-mcp_instance.py
-> logs/fastmcp/
-> output/
+generate_requirements(session_id, answer)
+> persisted requirement state
+> answer-review Prompt
+> MCP Sampling
+> state validator
+> atomic state save
+> next question | requirement renderer
+```
+
+```text
+generate_architecture(session_id)
+> completed requirement payload
+> technical-alignment Prompt
+> MCP Sampling
+> draft validator
+> planning renderer
+```
+
+```text
+run_audit(session_id)
+> requirement payload + architecture payload
+> audit Prompt
+> MCP Sampling
+> audit validator
+> audit renderer
+```
+
+## Storage links
+
+```text
+MCP_OUTPUT_ROOT
+> output/<session_id>/requirements.json
+> output/<session_id>/requirement-spec.md
+> output/<session_id>/architecture.json
+> output/<session_id>/architecture.md
+> output/<session_id>/audit.json
+> output/<session_id>/audit.md
+```
+
+```text
+MCP_STATE_ROOT
+> output/.logicmcp/sessions/<session_id>.json
 ```
 
 ## Configuration links

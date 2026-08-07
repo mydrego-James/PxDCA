@@ -8,10 +8,14 @@ from fastmcp import FastMCP
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_ROOT = Path(os.environ.get("MCP_OUTPUT_ROOT", ROOT / "output")).resolve()
 OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+STATE_ROOT = Path(
+    os.environ.get("MCP_STATE_ROOT", OUTPUT_ROOT / ".logicmcp" / "sessions")
+).resolve()
+STATE_ROOT.mkdir(parents=True, exist_ok=True)
 MCPS_LOG_DIR = ROOT / "logs" / "fastmcp"
 MCPS_LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-mcp = FastMCP("LogicMCP Federated Server")
+mcp = FastMCP("LogicMCP Server", version="3.0.0")
 
 def setup_logger() -> logging.Logger:
     """Create the service logger without depending on optional root tooling."""

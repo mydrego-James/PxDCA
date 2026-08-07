@@ -9,8 +9,8 @@ requirements.txt
 server/
 ```
 
-`server/` 會完整複製，因此其下的 Python modules、Prompts、Resources、Schemas、
-Templates 與 MCP Tools 都包含在 image 中。
+`server/` 會完整複製，因此三個公開 MCP Tools 與其私有 Prompts、Resources、
+Schemas、Validators、Renderers、Templates 都包含在 image 中。
 
 部署設定不寫入 image：
 
@@ -55,6 +55,10 @@ LOGICMCP_OUTPUT_DIR=./output
 | `LOGICMCP_LOG_DIR` | `volumes.source` | 保存 logs 的 host 目錄 |
 | `LOGICMCP_OUTPUT_DIR` | `volumes.source` | 保存輸出檔案的 host 目錄 |
 
+需求訪談狀態位於 output volume 內的 `.logicmcp/sessions/`。只要
+`LOGICMCP_OUTPUT_DIR` 指向持久化 host 目錄，Container 重建後仍可使用原本的
+`session_id` 接續。
+
 Container 內部設定維持固定：
 
 | 設定 | 值 | 原因 |
@@ -63,6 +67,7 @@ Container 內部設定維持固定：
 | Container port | `8000` | 與 Dockerfile `EXPOSE`、port target、healthcheck 一致 |
 | Transport | `http` | Compose service 透過 HTTP 對外提供 MCP |
 | Output root | `/srv/logicmcp/output` | 與 output bind mount target 一致 |
+| State root | `/srv/logicmcp/output/.logicmcp/sessions` | 與 output bind mount 一起持久化 |
 | Log root | `/srv/logicmcp/logs` | 與 log bind mount target 一致 |
 
 修改 `.env` 後，可先查看 Compose 實際解析結果：
