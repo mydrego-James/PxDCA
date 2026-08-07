@@ -1,38 +1,34 @@
-# LogicMCP input, output, and log boundary
+# LogicMCP input, state, output, and log boundary
 
-## Ownership
+## Input
 
-- Factory/APP/CLI owns user input, session state, LLM interaction, and the
-  destination selected for a Factory workflow.
-- LogicMCP Server owns MCP validation and deterministic rendering. A renderer
-  remains an MCP Tool even when the Factory selected its destination.
-- Root `logs/` belongs only to LogicMCP Server operations.
-- Root `output/` is the default destination owned by LogicMCP Server.
-- `factory/runtime/` belongs only to the separate optional Factory project.
+The Client selects one of the three public Tools. Natural-language generation
+inside a Tool is requested through MCP Sampling; the Server owns sequencing and
+validation.
 
-## Output path rule
+## State
 
-The public MCP Tool arguments remain unchanged:
+- Default path: `output/.logicmcp/sessions/`
+- Override: `MCP_STATE_ROOT`
+- Key: the `session_id` returned by `generate_requirements`
+- Storage: one atomically replaced JSON file per requirement workflow
 
-- A relative `output_dir` or `output_path` is resolved below root `output/`.
-- An absolute path is treated as a client-owned destination. This lets Factory
-  keep its artifacts under `factory/runtime/output/` without coupling MCP to
-  Factory internals.
-- A relative path may not traverse outside root `output/`.
+State is independent of an HTTP, stdio, VS Code, or other MCP connection. The
+state directory must be on persistent storage when the Server runs in a
+container.
 
-This preserves both valid flows:
+## Output
 
-```text
-MCP client -> relative path -> LogicMCP root output/
-Factory -> absolute Factory destination -> MCP renderer -> Factory runtime/output/
-```
+- Default root: `MCP_OUTPUT_ROOT`, normally `./output/`
+- Default workflow directory: `output/<session_id>/`
+- A relative `output_dir` must remain inside `MCP_OUTPUT_ROOT`.
+- An absolute `output_dir` is treated as an explicitly selected destination.
 
-## Log rule
+Generated artifacts are stored with the session so repeated completed calls are
+idempotent.
 
-`logs/fastmcp/` records LogicMCP startup, shutdown, HTTP request/response
-status, validation evidence, and MCP Tool execution. Request and response
-bodies are not copied into HTTP access logs; Tool validation logs retain the
-existing bounded evidence and hashes.
+## Logs
 
-Factory, CLI, adapter, and LLM logs are written below
-`factory/runtime/logs/` instead.
+`logs/fastmcp/` records Server startup, requests, workflow stages, validation
+outcomes, and errors. Session files contain user requirement content and must
+not be copied into logs.

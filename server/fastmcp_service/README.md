@@ -1,42 +1,23 @@
-# LogicMCP Server (FastMCP 3)
+# LogicMCP FastMCP service
 
-This package is the deployable product core. It registers LogicMCP Prompts,
-Resources, and deterministic Tools and serves them over MCP.
+This package registers three public MCP Tools and owns their complete workflows:
 
-From the repository root, the supported Windows entrypoint is:
+- `generate_requirements`
+- `generate_architecture`
+- `run_audit`
 
-```powershell
-.\run.bat
-```
+`public_tools.py` is the only MCP registration module. `workflow_service.py`
+owns orchestration and persistent sessions. Prompt templates, policies, schemas,
+validators, and renderers are private implementation details.
 
-FastMCP users can also inspect or run the project through `fastmcp.json`:
+Runtime entry:
 
-```powershell
-$env:PYTHONUTF8 = "1"
-fastmcp inspect fastmcp.json
-fastmcp run fastmcp.json
-```
-
-The equivalent Python module entrypoint is:
-
-```powershell
-$env:MCP_HOST = "127.0.0.1"
-$env:MCP_PORT = "8000"
-$env:MCP_PATH = "/mcp"
-$env:MCP_TRANSPORT = "http"
+```text
 python -m server.fastmcp_service
+> __main__.py
+> server.py
+> mcp_instance.py + public_tools.py
 ```
 
-Endpoint: `http://127.0.0.1:8000/mcp`.
-
-Relative paths passed to file-producing MCP Tools are resolved under the root
-`output/` directory. A Factory or another client may pass an absolute path when
-it owns the destination. Root `logs/` is reserved exclusively for MCP Server
-activity.
-
-See `docs/IO_BOUNDARY.md` for the complete Factory/MCP input, output, and log
-ownership rule.
-
-This package does not import the optional Python Factory, CLI/API adapters, or
-LLM providers. Workflow orchestration examples are described in
-`docs/WORKFLOW.md`.
+See `docs/WORKFLOW.md` for phase chains and `docs/IO_BOUNDARY.md` for state and
+filesystem boundaries.

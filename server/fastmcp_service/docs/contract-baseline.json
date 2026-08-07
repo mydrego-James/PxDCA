@@ -1,47 +1,23 @@
 {
-  "captured_at": "2026-08-04",
+  "captured_at": "2026-08-06",
   "endpoint": "http://127.0.0.1:8000/mcp",
   "tools": [
-    {"name": "render_software_specification", "required": ["output_dir", "payload_json"]},
-    {"name": "render_iso_aligned_audit", "required": ["output_dir", "payload_json"]},
-    {"name": "render_enterprise_baseline", "required": ["output_dir", "payload_json"]},
-    {"name": "render_requirement_baseline", "required": ["output_dir", "payload_json"]},
-    {"name": "render_planning_baseline", "required": ["output_dir", "payload_json"]},
-    {"name": "validate_requirement_interview_step", "required": ["payload_json"]},
-    {"name": "validate_consultant_plan", "required": ["payload_json"]},
-    {"name": "validate_specialist_turn", "required": ["payload_json"]},
-    {"name": "validate_consultant_plan_review", "required": ["payload_json"]},
-    {"name": "validate_consultant_answer_review", "required": ["payload_json", "user_message"]},
-    {"name": "validate_consultant_reconciliation", "required": ["payload_json"]},
-    {"name": "validate_technical_alignment_draft", "required": ["payload_json"]},
-    {"name": "validate_batch_audit_draft", "required": ["payload_json"]},
-    {"name": "validate_audit_draft", "required": ["payload_json"]},
-    {"name": "save_converged_requirements", "required": ["output_path", "payload_json"]},
-    {"name": "get_available_templates", "required": []}
+    {
+      "name": "generate_requirements",
+      "required": [],
+      "parameters": ["q0", "session_id", "answer", "profile", "output_dir"]
+    },
+    {
+      "name": "generate_architecture",
+      "required": ["session_id"],
+      "parameters": ["session_id", "output_dir"]
+    },
+    {
+      "name": "run_audit",
+      "required": ["session_id"],
+      "parameters": ["session_id", "output_dir"]
+    }
   ],
-  "prompts": [
-    {"name": "discovery_prompt", "arguments": [{"name": "available_templates_json", "required": false}]},
-    {"name": "consultant_plan_review", "arguments": []},
-    {"name": "requirement_interview", "arguments": [{"name": "profile", "required": true}]},
-    {"name": "consultant_reconciliation", "arguments": []},
-    {"name": "batch_audit_draft", "arguments": [{"name": "profile", "required": false}]},
-    {"name": "technical_alignment_draft", "arguments": [{"name": "profile", "required": false}]},
-    {"name": "iso_audit_draft", "arguments": []},
-    {"name": "system_design_draft", "arguments": []},
-    {"name": "pm_contract_draft", "arguments": []}
-  ],
-  "resources": [
-    {"name": "get_logicmcp_config", "uri": "config://logicmcp"},
-    {"name": "get_profile_policy", "uri": "policy://profiles"},
-    {"name": "get_domain_policy", "uri": "policy://domain"},
-    {"name": "get_specification_schema", "uri": "schema://software-specification"},
-    {"name": "get_requirement_state_schema", "uri": "schema://requirement-state"},
-    {"name": "get_requirement_interview_step_schema", "uri": "schema://requirement-interview-step"},
-    {"name": "get_consultant_plan_schema", "uri": "schema://consultant-plan"},
-    {"name": "get_specialist_turn_schema", "uri": "schema://specialist-turn"},
-    {"name": "get_consultant_answer_review_schema", "uri": "schema://consultant-answer-review"},
-    {"name": "get_consultant_reconciliation_schema", "uri": "schema://consultant-reconciliation"},
-    {"name": "get_technical_alignment_draft_schema", "uri": "schema://technical-alignment-draft"},
-    {"name": "get_audit_draft_schema", "uri": "schema://audit-draft"}
-  ]
+  "prompts": [],
+  "resources": []
 }

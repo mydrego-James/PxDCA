@@ -17,7 +17,8 @@
     "path": "/mcp",
     "log_level": "INFO",
     "env": {
-      "MCP_OUTPUT_ROOT": "./output"
+      "MCP_OUTPUT_ROOT": "./output",
+      "MCP_STATE_ROOT": "./output/.logicmcp/sessions"
     }
   }
 }

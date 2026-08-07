@@ -1,4 +1,4 @@
-from .mcp_instance import mcp, logger
+from .mcp_instance import logger
 from pathlib import Path
 import json
 
@@ -45,7 +45,6 @@ def _load_profile_policy() -> str:
         logger.error(f"Failed to load profile policy: {error}")
         return "{}"
 
-@mcp.prompt()
 def discovery_prompt(available_templates_json: str = "{}") -> str:
     """Return the consultant contract for building the initial requirement boundary map."""
     logger.info("[PROMPT] Loading consultant discovery contract")
@@ -57,7 +56,6 @@ def discovery_prompt(available_templates_json: str = "{}") -> str:
     )
 
 
-@mcp.prompt()
 def consultant_plan_review() -> str:
     """Return the release-gate contract for filtering an initial plan before display."""
     logger.info("[PROMPT] Loading consultant plan release-gate contract")
@@ -65,7 +63,6 @@ def consultant_plan_review() -> str:
         "{profile_policy_json}", _load_profile_policy()
     )
 
-@mcp.prompt()
 def requirement_interview(
     profile: str,
 ) -> str:
@@ -75,20 +72,17 @@ def requirement_interview(
     return template.replace("{capability_focus}", _load_capability_focus(profile))
 
 
-@mcp.prompt()
 def consultant_reconciliation() -> str:
     """Return the consultant contract for cross-domain reconciliation and next routing."""
     logger.info("[PROMPT] Loading consultant reconciliation contract")
     return _read_prompt("consultant_reconciliation.txt")
 
-@mcp.prompt()
 def batch_audit_draft(profile: str = "simple") -> str:
     """Return the bounded contract for the final Requirement Batch Audit (Stage A)."""
     logger.info(f"[PROMPT] Loading 'batch_audit_draft' with profile={profile}")
     template = _read_prompt("batch_audit_draft.txt")
     return template.replace("{profile}", profile)
 
-@mcp.prompt()
 def technical_alignment_draft(profile: str = "simple") -> str:
     """Return the bounded contract for planning a technical alignment draft."""
     logger.info(f"[PROMPT] Loading 'technical_alignment_draft' with profile={profile}")
@@ -96,21 +90,18 @@ def technical_alignment_draft(profile: str = "simple") -> str:
     return template.replace("{profile}", profile)
 
 
-@mcp.prompt()
 def iso_audit_draft() -> str:
     """Return the bounded role contract for an ISO-aligned audit draft."""
     logger.info("[PROMPT] Loading ISO-aligned audit draft contract")
     return _read_prompt("iso_audit_draft.txt")
 
 
-@mcp.prompt()
 def system_design_draft() -> str:
     """Return the future system-design draft contract; deterministic Tools remain pending."""
     logger.info("[PROMPT] Loading system-design draft contract")
     return _read_prompt("system_design_draft.txt")
 
 
-@mcp.prompt()
 def pm_contract_draft() -> str:
     """Return the future PM-contract draft contract; deterministic Tools remain pending."""
     logger.info("[PROMPT] Loading PM-contract draft contract")

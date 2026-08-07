@@ -11,6 +11,7 @@ services:
       MCP_PATH: "${MCP_PATH:-/mcp}"
       MCP_TRANSPORT: http
       MCP_OUTPUT_ROOT: /srv/logicmcp/output
+      MCP_STATE_ROOT: /srv/logicmcp/output/.logicmcp/sessions
     ports:
       - "${LOGICMCP_BIND_HOST:-127.0.0.1}:${LOGICMCP_HOST_PORT:-8000}:8000"
     volumes:

@@ -56,16 +56,16 @@ tools/
 檢查項目：
 
 - 連線並完成 MCP initialize。
-- 列出 Tools、Prompts、Resources。
-- 與 `server/fastmcp_service/docs/contract-baseline.json` 比較名稱、URI 及 required arguments。
-- 呼叫 read-only Tool `get_available_templates`。
-- 可選 `--write-probe` 呼叫 `save_converged_requirements`，輸出到獨立 validation 目錄。
+- 列出 Tools、Prompts、Resources，確認公開面固定為 3 / 0 / 0。
+- 與 `server/fastmcp_service/docs/contract-baseline.json` 比較名稱及 required arguments。
+- 驗證 `generate_requirements` 缺少 Q0 時回傳受控錯誤。
+- 可選 `--sampling-probe` 使用測試 Sampling handler 建立暫存需求 session，驗證中斷後接續。
 
 介面：
 
 ```powershell
 .\.venv\Scripts\python.exe tools\contract_check.py --url http://127.0.0.1:8000/mcp
-.\.venv\Scripts\python.exe tools\contract_check.py --url http://127.0.0.1:8000/mcp --write-probe
+.\.venv\Scripts\python.exe tools\contract_check.py --url http://127.0.0.1:8000/mcp --sampling-probe
 ```
 
 驗收：initialize/list/call 任一步失敗均回傳非零 exit code；契約差異逐項顯示，

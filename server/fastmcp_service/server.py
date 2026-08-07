@@ -1,11 +1,9 @@
 import os
 
 from .mcp_instance import UVICORN_LOG_CONFIG, mcp, logger
-from . import prompts
-from . import tools
-from . import resources
+from . import public_tools  # noqa: F401
 
-logger.info("LogicMCP FastMCP Server endpoints registered.")
+logger.info("LogicMCP public workflows registered: requirements, architecture, audit.")
 
 def main():
     transport = os.environ.get("MCP_TRANSPORT", "http").lower()

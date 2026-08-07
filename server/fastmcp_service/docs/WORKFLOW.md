@@ -1,43 +1,65 @@
-# LogicMCP Python Workflow
+# LogicMCP workflow
 
-The optional Python Factory is the explicit workflow controller. FastMCP exposes Prompts, Resources, and Tools; it does not import the Factory, an LLM provider, or an Agent Skill runtime.
+## Public MCP surface
 
-## Responsibility boundary
+LogicMCP registers exactly three MCP Tools:
 
-- Python selects the stage, retrieves an MCP Prompt, sends Prompt plus input to the configured LLM, receives JSON, calls deterministic MCP Tools, persists approved State, and returns results.
-- Prompts define the LLM role, semantic boundary, and JSON output contract for one atomic model task.
-- Resources provide Schemas, Policies, Profiles, and Templates.
-- Tools validate JSON and State transitions, persist approved data, and render artifacts.
-- The LLM performs natural-language interpretation only. It does not own workflow sequencing or deterministic approval.
+- `generate_requirements`
+- `generate_architecture`
+- `run_audit`
 
-## Requirement workflow
+No MCP Prompts or Resources are registered. Prompt templates, policies, schemas,
+validators, state transitions, and renderers are private Server implementation.
 
-### 1. Topic discovery
+## Requirements
 
-1. Python calls `get_available_templates`.
-2. Python gets `discovery_prompt` and sends Q0 plus the authorized depth profile to the LLM.
-3. The LLM returns one complete `Q1..Qn` Consultant Plan draft.
-4. Python may run `consultant_plan_review` when the selected release policy requires a second LLM review.
-5. Python calls `validate_consultant_plan` or `validate_consultant_plan_review` and stores only the approved State.
+```text
+q0
+> private discovery prompt
+> Client LLM Sampling
+> consultant-plan validation
+> persist Q1..Qn and active question
 
-### 2. Answer review loop
+session_id + answer
+> load persisted state
+> private answer-review prompt
+> Client LLM Sampling
+> state-transition validation
+> persist the accepted state
+> next question or final requirement rendering
+```
 
-1. Python keeps the complete Requirement State and the untouched `user_message` separate.
-2. Python gets `requirement_interview` using the active question's capability profile.
-3. The LLM compares the message with every existing Q item and returns a bounded Patch.
-4. Python calls `validate_consultant_answer_review` with the same untouched message and State.
-5. Python stores only the approved new State and repeats until convergence.
+Calling `generate_requirements` with only `session_id` reads the persisted state
+and returns the current question. The MCP connection is not the workflow state.
 
-Python must not create Q ids, parse Qn references, resolve option keys, or decide which question the message answers.
+## Architecture
 
-## Draft document workflow
+```text
+session_id
+> load completed requirement payload
+> private technical-alignment prompt
+> Client LLM Sampling
+> technical-alignment validation
+> architecture rendering
+> persist payload and artifacts
+```
 
-1. `batch_audit_draft` → LLM → `validate_batch_audit_draft` → `render_requirement_baseline`.
-2. `technical_alignment_draft` → LLM → `validate_technical_alignment_draft` → `render_planning_baseline`.
-3. `iso_audit_draft` → LLM → `validate_audit_draft` → `render_iso_aligned_audit` and `render_enterprise_baseline`.
+## Audit
 
-`system_design_draft` and `pm_contract_draft` are registered Prompt contracts for future stages. Their deterministic Validators and Renderers are not implemented; Python must fail closed and must not claim either stage is complete.
+```text
+session_id
+> load completed requirement and architecture payloads
+> private audit prompt
+> Client LLM Sampling
+> audit validation
+> audit rendering
+> persist payload and artifacts
+```
 
-## Runtime call rule
+## Failure and resume rule
 
-Retrieving a Prompt or Resource and calling a deterministic Tool does not itself call an LLM. Every LLM call must be explicit in Python, logged with its stage, and bounded by the selected workflow policy.
+Only validated state is persisted. The state is saved before a completed
+interview advances into document generation. A retry with the same `session_id`
+therefore resumes from the last committed phase without repeating accepted
+answers. Completed architecture and audit calls are idempotent and return their
+existing artifacts.
