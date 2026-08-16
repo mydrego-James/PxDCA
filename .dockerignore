@@ -1,5 +1,7 @@
-# The runtime image only needs the dependency manifest and Server package.
+# The runtime image only needs dependencies, the Server, and the canonical Skill.
 **
 !requirements.txt
 !server/
 !server/**
+!tools/
+!tools/SKILL.md

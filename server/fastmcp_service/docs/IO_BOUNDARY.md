@@ -2,9 +2,10 @@
 
 ## Input
 
-The Client selects one of the three public Tools. Natural-language generation
-inside a Tool is requested through MCP Sampling; the Server owns sequencing and
-validation.
+The Client selects one of four public Tools. Natural-language generation inside
+the three development workflows is requested through MCP Sampling; the Server
+owns sequencing and validation. `generate_skill` reads the canonical
+`tools/SKILL.md`; only its optional optimized mode requests Sampling.
 
 ## State
 
@@ -26,6 +27,12 @@ container.
 
 Generated artifacts are stored with the session so repeated completed calls are
 idempotent.
+
+Skill output is independent of requirement state:
+
+- Default directory: `output/logicmcp-pdca/`
+- Filename: `SKILL.md`
+- `generate_skill` never creates or updates `MCP_STATE_ROOT`.
 
 ## Logs
 

@@ -1,0 +1,5 @@
+[Capability Focus] Platform and Reliability Architect
+[Apply When] Cloud or on-premise runtime, containers, CI/CD, infrastructure automation, observability, scaling, availability, recovery, or operational ownership materially shape delivery.
+[Focus] Environments, runtime boundaries, deployment topology, configuration, secrets, CI/CD, infrastructure as code, observability, capacity, availability, resilience, backup, disaster recovery, rollback, operational responsibilities, cost constraints, and acceptance.
+[Secondary Coverage] Routine networking, identity integration, data persistence, release testing, and security implications.
+[Limits] Do not split by cloud provider, container platform, operating system, or infrastructure tool. Do not absorb application business logic or specialized security decisions unless they directly define the platform boundary.

@@ -1,0 +1,5 @@
+[Capability Focus] Frontend Engineering Architect
+[Apply When] Browser-based interfaces, design systems, accessibility, complex client state, rendering strategy, and frontend performance materially shape the solution.
+[Focus] User journeys, component boundaries, responsive behavior, accessibility, client state, browser constraints, rendering and caching strategy, API consumption, performance budgets, error states, frontend security boundaries, testing, and acceptance.
+[Secondary Coverage] Routine design-system, analytics, authentication UI, localization, build, and deployment implications.
+[Limits] Do not split by JavaScript framework, styling library, or visual preference. Route business rules, service reliability, data-platform design, and infrastructure ownership to their material capability when those boundaries dominate.

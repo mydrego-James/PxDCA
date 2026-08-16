@@ -2,14 +2,21 @@
 
 ## Public MCP surface
 
-LogicMCP registers exactly three MCP Tools:
+LogicMCP registers exactly four MCP Tools:
 
 - `generate_requirements`
 - `generate_architecture`
 - `run_audit`
+- `generate_skill`
 
 No MCP Prompts or Resources are registered. Prompt templates, policies, schemas,
 validators, state transitions, and renderers are private Server implementation.
+
+The first three Tools own the requirement, architecture, and audit workflows.
+`generate_skill` exports the optional canonical `tools/SKILL.md`; its optimized
+mode may append Client-LLM guidance but cannot replace the fixed PDCA and Tool
+contract content. Skill generation does not create or modify a requirement
+session.
 
 ## Requirements
 
@@ -37,10 +44,13 @@ and returns the current question. The MCP connection is not the workflow state.
 ```text
 session_id
 > load completed requirement payload
-> private technical-alignment prompt
+> load the complete first-stage questions, accepted answers, assessments, and capability_profile ids
+> perform one focus-correspondence pass across that complete context
+> combine the relevant private capability TXT files into one AI skill boundary
+> inject that boundary once into the separate private technical-alignment prompt
 > Client LLM Sampling
 > technical-alignment validation
-> architecture rendering
+> architecture-specific rendering
 > persist payload and artifacts
 ```
 

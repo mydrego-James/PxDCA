@@ -1,10 +1,10 @@
 # LogicMCP Server public-surface audit
 
-Audit date: 2026-08-06
+Audit date: 2026-08-08
 
 ## Public contract
 
-- Tools: 3
+- Tools: 4
 - Prompts: 0
 - Resources: 0
 - Baseline: `contract-baseline.json`
@@ -14,6 +14,7 @@ Public Tools:
 1. `generate_requirements`
 2. `generate_architecture`
 3. `run_audit`
+4. `generate_skill`
 
 ## Registration boundary
 
@@ -24,11 +25,12 @@ Public Tools:
 
 ## Workflow ownership
 
-- Client chooses one of the three business methods.
+- Client chooses one of three development workflows or the independent Skill exporter.
 - Server owns all internal phase routing and deterministic validation.
 - Server requests language generation through MCP Sampling.
 - Requirement interview state is stored below `MCP_STATE_ROOT` and is not tied
   to a transport connection.
+- Skill generation does not create or update requirement state.
 
 ## Contract corrections
 
@@ -41,9 +43,10 @@ Public Tools:
 
 ## Verification
 
-- In-memory MCP initialize/list: 3 Tools, 0 Prompts, 0 Resources.
+- In-memory MCP initialize/list: 4 Tools, 0 Prompts, 0 Resources.
 - Python compile: passed.
 - Deterministic Sampling smoke test: Q0 generated Q1..Q3.
 - Client disconnect/reconnect test: the same `session_id` resumed at Q2.
 - Requirement, architecture, and audit artifact generation: passed.
 - Persisted final phase: `audit_completed`.
+- Canonical and optimized Skill generation: covered by the public workflow tests.

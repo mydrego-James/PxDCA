@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-06",
+  "captured_at": "2026-08-08",
   "endpoint": "http://127.0.0.1:8000/mcp",
   "tools": [
     {
@@ -16,6 +16,11 @@
       "name": "run_audit",
       "required": ["session_id"],
       "parameters": ["session_id", "output_dir"]
+    },
+    {
+      "name": "generate_skill",
+      "required": [],
+      "parameters": ["mode", "customization", "output_dir"]
     }
   ],
   "prompts": [],

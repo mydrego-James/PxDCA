@@ -1,4 +1,24 @@
 {
+  "frontend_engineer": {
+    "name": "Frontend Engineering Architect",
+    "description": "A broad capability for browser UI, accessibility, client state, rendering, frontend performance, and acceptance boundaries.",
+    "prompt_file": "frontend_engineer.txt"
+  },
+  "backend_engineer": {
+    "name": "Backend Engineering Architect",
+    "description": "A broad capability for services, business logic, APIs, transactions, asynchronous processing, reliability, and backend acceptance.",
+    "prompt_file": "backend_engineer.txt"
+  },
+  "platform_engineer": {
+    "name": "Platform and Reliability Architect",
+    "description": "A broad capability for runtime platforms, CI/CD, infrastructure, observability, scaling, recovery, and operational acceptance.",
+    "prompt_file": "platform_engineer.txt"
+  },
+  "quality_engineer": {
+    "name": "Quality and Test Engineering Architect",
+    "description": "A broad capability for verification strategy, automation, regression, release gates, traceability, and measurable completion.",
+    "prompt_file": "quality_engineer.txt"
+  },
   "personal_website": {
     "name": "Personal Website Architect",
     "description": "A constraint template for rapidly converging personal website requirements.",

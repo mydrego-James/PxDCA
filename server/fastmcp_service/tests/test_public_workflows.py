@@ -13,6 +13,7 @@ os.environ["MCP_STATE_ROOT"] = str(Path(_RUNTIME.name) / "state")
 
 from fastmcp import Client  # noqa: E402
 
+from .. import prompts  # noqa: E402
 from ..server import mcp  # noqa: E402
 
 
@@ -24,8 +25,20 @@ def _request(params) -> dict:
 
 async def _sampling_handler(messages, params, context) -> str:
     system = params.systemPrompt or ""
+    if "optional, context-specific guidance" in system:
+        return "### Project convention\n\nPrefer the repository's existing document locations."
     request = _request(params)
     if "Planning Rules" in system:
+        for profile_id in (
+            "frontend_engineer",
+            "backend_engineer",
+            "platform_engineer",
+            "quality_engineer",
+        ):
+            if f'"{profile_id}"' not in system:
+                raise AssertionError(f"Q0 did not receive capability profile: {profile_id}")
+        if "not by implementation language" not in system:
+            raise AssertionError("Q0 did not receive the capability granularity rule")
         q0 = request["q0"]
         return json.dumps({
             "schema_version": "2.0", "stage": "consultant_plan",
@@ -33,9 +46,9 @@ async def _sampling_handler(messages, params, context) -> str:
             "topic": {"raw": q0, "normalized": q0, "language": "zh-TW"},
             "facts": {},
             "qa_items": [
-                _question("Q1", 1, ["purpose", "primary_users"], 10),
-                _question("Q2", 2, ["core_scope", "basic_constraints"], 9),
-                _question("Q3", 3, ["acceptance_criteria", "material_assumptions"], 8),
+                _question("Q1", 1, ["purpose", "primary_users"], 10, "frontend_engineer"),
+                _question("Q2", 2, ["core_scope", "basic_constraints"], 9, "backend_engineer"),
+                _question("Q3", 3, ["acceptance_criteria", "material_assumptions"], 8, "platform_engineer"),
             ],
             "advisory_suggestions": [], "active_question_id": "Q1",
             "converged": False, "reason": "test",
@@ -45,6 +58,16 @@ async def _sampling_handler(messages, params, context) -> str:
         answer = request["user_message"]
         active_id = state["active_question_id"]
         active = next(item for item in state["qa_items"] if item["id"] == active_id)
+        expected_profile_markers = {
+            "Q1": "Frontend Engineering Architect",
+            "Q2": "Backend Engineering Architect",
+            "Q3": "Platform and Reliability Architect",
+        }
+        expected_marker = expected_profile_markers[active_id]
+        if expected_marker not in system:
+            raise AssertionError(
+                f"{active_id} did not load its capability profile prompt: {expected_marker}"
+            )
         return json.dumps({
             "schema_version": "2.0", "stage": "consultant_answer_review",
             "active_question_id": active_id,
@@ -68,6 +91,34 @@ async def _sampling_handler(messages, params, context) -> str:
             "add_on_services": [], "unresolved_items": [],
         }, ensure_ascii=False)
     if "Technical Alignment Planner" in system:
+        if system.count("[Architecture Capability Boundary - Single Pass]") != 1:
+            raise AssertionError("Architecture capability boundary was not injected once")
+        if "not as personas or sequential role changes" not in system:
+            raise AssertionError("Architecture prompt permits capability role switching")
+        for capability_marker in (
+            "Frontend Engineering Architect",
+            "Backend Engineering Architect",
+            "Platform and Reliability Architect",
+        ):
+            if capability_marker not in system:
+                raise AssertionError(
+                    "Architecture did not receive capability prompt: "
+                    f"{capability_marker}"
+                )
+        qa_context = request.get("requirement_qa_context")
+        expected_routes = [
+            ("Q1", "frontend_engineer"),
+            ("Q2", "backend_engineer"),
+            ("Q3", "platform_engineer"),
+        ]
+        actual_routes = [
+            (item.get("question_id"), item.get("capability_profile"))
+            for item in qa_context or []
+        ]
+        if actual_routes != expected_routes:
+            raise AssertionError("Architecture did not receive the first-stage Q&A routing")
+        if any(not item.get("answer") for item in qa_context or []):
+            raise AssertionError("Architecture did not receive every accepted Q&A answer")
         requirements = request["requirements"]
         return json.dumps({
             "schema_version": "1.0", "stage": "technical_alignment_draft", "status": "draft",
@@ -91,10 +142,16 @@ async def _sampling_handler(messages, params, context) -> str:
     raise AssertionError("unexpected sampling stage")
 
 
-def _question(question_id: str, order: int, dimensions: list[str], priority: int) -> dict:
+def _question(
+    question_id: str,
+    order: int,
+    dimensions: list[str],
+    priority: int,
+    capability_profile: str,
+) -> dict:
     return {
         "id": question_id, "display_order": order, "dimension": question_id,
-        "policy_dimensions": dimensions, "capability_profile": "desktop_app",
+        "policy_dimensions": dimensions, "capability_profile": capability_profile,
         "target_fact": question_id, "priority": priority, "status": "pending",
         "question": {"type": "fill_in", "text": f"{question_id}?", "options": []},
         "answer": None, "assessment": None, "follow_ups": [], "source_turn": 0,
@@ -102,14 +159,103 @@ def _question(question_id: str, order: int, dimensions: list[str], priority: int
 
 
 class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
-    async def test_public_contract_is_exactly_three_tools(self) -> None:
+    def test_every_registered_capability_profile_loads_its_txt(self) -> None:
+        service_root = Path(__file__).resolve().parents[1]
+        registry = json.loads(
+            (service_root / "resources" / "templates" / "profiles.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        for profile_id, profile in registry.items():
+            prompt_path = service_root / "prompts" / "profiles" / profile["prompt_file"]
+            self.assertTrue(prompt_path.is_file(), profile_id)
+            self.assertNotIn(
+                "General software requirement analysis",
+                prompts.requirement_interview(profile_id),
+                profile_id,
+            )
+
+        self.assertIn(
+            "Quality and Test Engineering Architect",
+            prompts.requirement_interview("quality_engineer"),
+        )
+
+    async def test_public_contract_is_exactly_four_tools(self) -> None:
         async with Client(mcp) as client:
+            tools = await client.list_tools()
             self.assertEqual(
-                [tool.name for tool in await client.list_tools()],
-                ["generate_requirements", "generate_architecture", "run_audit"],
+                [tool.name for tool in tools],
+                [
+                    "generate_requirements",
+                    "generate_architecture",
+                    "run_audit",
+                    "generate_skill",
+                ],
             )
             self.assertEqual(await client.list_prompts(), [])
             self.assertEqual(await client.list_resources(), [])
+            baseline_path = Path(__file__).resolve().parents[1] / "docs" / "contract-baseline.json"
+            baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+            actual = [
+                {
+                    "name": tool.name,
+                    "required": tool.inputSchema.get("required", []),
+                    "parameters": list(tool.inputSchema.get("properties", {}).keys()),
+                }
+                for tool in tools
+            ]
+            self.assertEqual(actual, baseline["tools"])
+
+    async def test_generate_canonical_and_optimized_skill(self) -> None:
+        state_root = Path(os.environ["MCP_STATE_ROOT"])
+        sessions_before = set(state_root.glob("*.json"))
+        async with Client(mcp) as client:
+            canonical = (
+                await client.call_tool(
+                    "generate_skill",
+                    {"mode": "template", "output_dir": "skills/canonical"},
+                )
+            ).data
+            self.assertEqual(canonical["status"], "completed")
+            self.assertEqual(canonical["mode"], "template")
+            canonical_content = canonical["content"]
+            canonical_path = Path(canonical["artifact"]["path"])
+            self.assertEqual(canonical_path.read_text(encoding="utf-8"), canonical_content)
+
+            required = [
+                "Plan",
+                "Do",
+                "Check",
+                "Act",
+                "Problem / Purpose",
+                "Design",
+                "Check / Challenge",
+                "Action",
+                "generate_requirements",
+                "generate_architecture",
+                "run_audit",
+                "session_id",
+            ]
+            for item in required:
+                self.assertIn(item, canonical_content)
+
+        async with Client(mcp, sampling_handler=_sampling_handler) as client:
+            optimized = (
+                await client.call_tool(
+                    "generate_skill",
+                    {
+                        "mode": "optimized",
+                        "customization": "Follow project document locations.",
+                        "output_dir": "skills/optimized",
+                    },
+                )
+            ).data
+            self.assertEqual(optimized["status"], "completed")
+            self.assertIn(canonical_content.rstrip(), optimized["content"])
+            self.assertIn("Project convention", optimized["content"])
+            for item in required:
+                self.assertIn(item, optimized["content"])
+        self.assertEqual(set(state_root.glob("*.json")), sessions_before)
 
     async def test_persistent_resume_and_complete_pipeline(self) -> None:
         async with Client(mcp, sampling_handler=_sampling_handler) as client:

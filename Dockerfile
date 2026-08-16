@@ -4,6 +4,7 @@ WORKDIR /srv/logicmcp
 COPY requirements.txt /srv/logicmcp/requirements.txt
 RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY server/ /srv/logicmcp/server/
+COPY tools/SKILL.md /srv/logicmcp/tools/SKILL.md
 RUN mkdir -p /srv/logicmcp/logs /srv/logicmcp/output \
     && python -m compileall -q /srv/logicmcp/server
 

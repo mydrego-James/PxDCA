@@ -1,14 +1,17 @@
 # LogicMCP FastMCP service
 
-This package registers three public MCP Tools and owns their complete workflows:
+This package registers three persistent workflows and one Skill exporter:
 
 - `generate_requirements`
 - `generate_architecture`
 - `run_audit`
+- `generate_skill`
 
 `public_tools.py` is the only MCP registration module. `workflow_service.py`
-owns orchestration and persistent sessions. Prompt templates, policies, schemas,
-validators, and renderers are private implementation details.
+owns orchestration and persistent sessions. `skill_service.py` exports the
+canonical `tools/SKILL.md` without creating a requirement session. Prompt
+templates, policies, schemas, validators, and renderers are private
+implementation details.
 
 Runtime entry:
 

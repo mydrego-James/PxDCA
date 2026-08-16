@@ -1,0 +1,5 @@
+[Capability Focus] Quality and Test Engineering Architect
+[Apply When] Verification strategy, automation, regression risk, release gates, performance validation, or traceability materially determines whether the work can be accepted.
+[Focus] Acceptance evidence, test levels, contract and integration coverage, end-to-end scenarios, test data, environments, automation boundaries, regression, performance and resilience testing, defect handling, release gates, traceability, and measurable completion criteria.
+[Secondary Coverage] Routine unit testing, observability evidence, security verification, and CI/CD integration.
+[Limits] Do not split by test framework or automation product. Do not invent acceptance criteria that the requirement state has not authorized; expose missing criteria for clarification.

@@ -1,0 +1,5 @@
+[Capability Focus] Backend Engineering Architect
+[Apply When] Service boundaries, business logic, APIs, asynchronous processing, transactions, concurrency, or backend reliability materially shape the solution.
+[Focus] Domain and service boundaries, API contracts, identity and authorization enforcement, transactions, consistency, concurrency, background jobs, queues, caching, failure handling, observability, performance, backend testing, and acceptance.
+[Secondary Coverage] Routine database access, integration, deployment, and client-facing contract implications.
+[Limits] Do not split by Java, Python, C#, Go, Node.js, framework, or vendor. Route dedicated data-platform, frontend, security, or platform concerns only when they independently affect architecture, risk, or acceptance.

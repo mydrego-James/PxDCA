@@ -83,11 +83,33 @@ def batch_audit_draft(profile: str = "simple") -> str:
     template = _read_prompt("batch_audit_draft.txt")
     return template.replace("{profile}", profile)
 
-def technical_alignment_draft(profile: str = "simple") -> str:
+def technical_alignment_draft(
+    profile: str = "simple",
+    capability_profiles: list[str] | None = None,
+) -> str:
     """Return the bounded contract for planning a technical alignment draft."""
-    logger.info(f"[PROMPT] Loading 'technical_alignment_draft' with profile={profile}")
+    capability_profiles = list(dict.fromkeys(capability_profiles or []))
+    logger.info(
+        "[PROMPT] Loading 'technical_alignment_draft' "
+        f"with profile={profile} capabilities={capability_profiles}"
+    )
     template = _read_prompt("technical_alignment_draft.txt")
-    return template.replace("{profile}", profile)
+    capability_focus = "\n\n".join(
+        f"Capability source `{capability}`:\n{_load_capability_focus(capability)}"
+        for capability in capability_profiles
+    )
+    if not capability_focus:
+        capability_focus = "[Capability Focus] General software architecture analysis."
+    capability_boundary = (
+        "[Architecture Capability Boundary - Single Pass]\n"
+        "Treat the following material as one combined skill boundary, not as "
+        "personas or sequential role changes.\n\n"
+        f"{capability_focus}"
+    )
+    return (
+        template.replace("{profile}", profile)
+        .replace("{capability_boundary}", capability_boundary)
+    )
 
 
 def iso_audit_draft() -> str:

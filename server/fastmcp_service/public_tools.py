@@ -1,10 +1,11 @@
-"""The complete public MCP surface: exactly three closed workflows."""
+"""The complete public MCP surface: three workflows and one Skill exporter."""
 
 from typing import Literal
 
 from fastmcp import Context
 
 from .mcp_instance import mcp
+from .skill_service import generate_skill_document
 from .workflow_service import audit_workflow, architecture_workflow, requirements_workflow
 
 
@@ -64,4 +65,31 @@ async def run_audit(
     return await audit_workflow(ctx, session_id=session_id, output_dir=output_dir)
 
 
-__all__ = ["generate_requirements", "generate_architecture", "run_audit"]
+@mcp.tool(
+    name="generate_skill",
+    description=(
+        "產生可選的 LogicMCP SKILL.md。template 模式輸出 Server canonical 模板；"
+        "optimized 模式透過 Client LLM Sampling 附加情境化指引，但固定保留兩種 PDCA"
+        "差異、前三個 Tool 的用途與 session_id 接續規則。此 Tool 不建立需求 session。"
+    ),
+)
+async def generate_skill(
+    ctx: Context,
+    mode: Literal["template", "optimized"] = "template",
+    customization: str = "",
+    output_dir: str = "",
+) -> dict:
+    return await generate_skill_document(
+        ctx,
+        mode=mode,
+        customization=customization,
+        output_dir=output_dir,
+    )
+
+
+__all__ = [
+    "generate_requirements",
+    "generate_architecture",
+    "run_audit",
+    "generate_skill",
+]

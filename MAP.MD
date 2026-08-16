@@ -10,7 +10,8 @@ LogicMCP_Server/
 │  └─ fastmcp_service/
 ├─ tools/
 │  ├─ README.md
-│  └─ PLAN.md
+│  ├─ PLAN.md
+│  └─ SKILL.md
 ├─ logs/
 │  └─ README.md
 ├─ output/
@@ -43,6 +44,7 @@ server/
    ├─ server.py
    ├─ mcp_instance.py
    ├─ public_tools.py
+   ├─ skill_service.py
    ├─ workflow_service.py
    ├─ prompts.py
    ├─ resources.py
@@ -122,7 +124,9 @@ public_tools.py
 > generate_requirements
 > generate_architecture
 > run_audit
+> generate_skill
 > workflow_service.py
+> skill_service.py
 ```
 
 ## Internal workflow links
@@ -202,6 +206,14 @@ run_audit(session_id)
 > audit renderer
 ```
 
+```text
+generate_skill(mode, customization, output_dir)
+> tools/SKILL.md
+> template: canonical copy
+> optimized: optional MCP Sampling addition
+> output_dir/SKILL.md
+```
+
 ## Storage links
 
 ```text
@@ -212,6 +224,7 @@ MCP_OUTPUT_ROOT
 > output/<session_id>/architecture.md
 > output/<session_id>/audit.json
 > output/<session_id>/audit.md
+> output/logicmcp-pdca/SKILL.md
 ```
 
 ```text
@@ -225,7 +238,7 @@ MCP_STATE_ROOT
 install.bat > requirements.txt > .venv/
 run.bat > .env + install.bat
 fastmcp.json > requirements.txt
-Dockerfile > requirements.txt + server/
+Dockerfile > requirements.txt + server/ + tools/SKILL.md
 .env > run.bat + compose.yaml
 compose.yaml > Dockerfile + logs/ + output/
 .dockerignore > Docker build context

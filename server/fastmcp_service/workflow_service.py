@@ -104,6 +104,64 @@ def _templates_json() -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _capability_profile_ids() -> set[str]:
+    profiles = json.loads(_templates_json())
+    return set(profiles) if isinstance(profiles, dict) else set()
+
+
+def _session_capability_routing(session: dict[str, Any]) -> list[dict[str, str]]:
+    requirement_state = session.get("requirement_state")
+    if not isinstance(requirement_state, dict):
+        return []
+    qa_items = requirement_state.get("qa_items")
+    if not isinstance(qa_items, list):
+        return []
+    return [
+        {
+            "question_id": str(item["id"]),
+            "capability_profile": str(item["capability_profile"]),
+        }
+        for item in qa_items
+        if isinstance(item, dict)
+        and isinstance(item.get("id"), str)
+        and item["id"].strip()
+        and isinstance(item.get("capability_profile"), str)
+        and item["capability_profile"].strip()
+    ]
+
+
+def _session_capability_profiles(session: dict[str, Any]) -> list[str]:
+    profiles = [
+        route["capability_profile"]
+        for route in _session_capability_routing(session)
+    ]
+    return list(dict.fromkeys(profiles))
+
+
+def _requirement_qa_context(session: dict[str, Any]) -> list[dict[str, Any]]:
+    requirement_state = session.get("requirement_state")
+    if not isinstance(requirement_state, dict):
+        return []
+    qa_items = requirement_state.get("qa_items")
+    if not isinstance(qa_items, list):
+        return []
+    context: list[dict[str, Any]] = []
+    for item in qa_items:
+        if not isinstance(item, dict):
+            continue
+        question = item.get("question")
+        context.append(
+            {
+                "question_id": item.get("id"),
+                "capability_profile": item.get("capability_profile"),
+                "question": question.get("text") if isinstance(question, dict) else None,
+                "answer": item.get("answer"),
+                "assessment": item.get("assessment"),
+            }
+        )
+    return context
+
+
 def _append_validation_errors(
     validation: dict[str, Any], errors: list[str]
 ) -> dict[str, Any]:
@@ -125,6 +183,18 @@ def _validate_discovery(
     topic = payload.get("topic") if isinstance(payload.get("topic"), dict) else {}
     if topic.get("raw") != q0:
         errors.append("topic.raw must exactly preserve q0")
+    known_capabilities = _capability_profile_ids()
+    qa_items = payload.get("qa_items")
+    if isinstance(qa_items, list):
+        for index, item in enumerate(qa_items):
+            if not isinstance(item, dict):
+                continue
+            capability = item.get("capability_profile")
+            if capability not in known_capabilities:
+                errors.append(
+                    f"qa_items[{index}].capability_profile must exactly match "
+                    "an Available capability profiles JSON key"
+                )
     return _append_validation_errors(validation, errors)
 
 
@@ -478,8 +548,13 @@ async def architecture_workflow(
             payload, _ = await _sample_validated(
                 ctx,
                 stage="technical_alignment_draft",
-                system_prompt=prompts.technical_alignment_draft(session["profile"]),
-                input_value={"requirements": requirements},
+                system_prompt=prompts.technical_alignment_draft(
+                    session["profile"], _session_capability_profiles(session)
+                ),
+                input_value={
+                    "requirements": requirements,
+                    "requirement_qa_context": _requirement_qa_context(session),
+                },
                 validator=lambda candidate: _validate_architecture_document(
                     candidate, requirements=requirements, session_id=session_id
                 ),

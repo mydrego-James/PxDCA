@@ -9,8 +9,9 @@ requirements.txt
 server/
 ```
 
-`server/` 會完整複製，因此三個公開 MCP Tools 與其私有 Prompts、Resources、
-Schemas、Validators、Renderers、Templates 都包含在 image 中。
+`server/` 會完整複製，因此四個公開 MCP Tools 與其私有 Prompts、Resources、
+Schemas、Validators、Renderers、Templates 都包含在 image 中。Canonical
+`tools/SKILL.md` 也會複製到 image，供 `generate_skill` 輸出。
 
 部署設定不寫入 image：
 
