@@ -1,4 +1,4 @@
-# LogicMCP Server
+# 源專案 LogicMCP Server 改名 PxDCA
 
 > **Before writing code, align the logic.**
 >
