@@ -1,21 +1,23 @@
-# 源專案 LogicMCP Server 改名 PxDCA
+# PxDCA
 
-> **Before writing code, align the logic.**
+> **Before implementation, align the logic.**
 >
-> 在第一行程式碼出現之前，先確認需求、架構與交付目標指向同一個方向。
+> 在任何實作開始之前，先用文字確認需求、技術規劃與交付依據指向同一個方向。
 
-LogicMCP Server 是以 [FastMCP 3](https://gofastmcp.com/) 建置的需求工程服務。前三個公開 MCP Tools 將模糊想法整理成可追溯的需求書、架構書與稽核報告；第 4 個 Tool 產生可選的 `SKILL.md`。問題生成、LLM Sampling、Schema 驗證、狀態轉移及文件渲染都封裝在 Server 內部。
+> **改名註記：** 本專案原名為 `LogicMCP_Server`，現已改名為 `PxDCA`。程式內既有的 `LogicMCP`、`LOGICMCP_*` 與 `logicmcp-pdca` 等識別目前為相容性名稱，仍可正常使用。
+
+PxDCA 是以 [FastMCP 3](https://gofastmcp.com/) 建置的文字規劃與邊界校準服務。它不負責撰寫產品程式碼，而是透過 MCP 與背後的 Prompt TXT，讓 AI 以有依據、可追溯且不過度延伸的方式建立需求與技術規劃。前三個公開 MCP Tools 產生需求書、架構書與 PM／PG 對齊報告；第 4 個 Tool 產生可選的 `SKILL.md`。
 
 - `generate_requirements`：建立並接續需求訪談，完成後產生需求書。
-- `generate_architecture`：根據已完成的需求工作階段產生架構書。
-- `run_audit`：檢查需求與架構的一致性、覆蓋、風險及追溯關係。
+- `generate_architecture`：根據已完成的需求工作階段產生技術選型與架構規劃書。
+- `run_audit`：以 PQ 視角檢查 PM 需求與 PG 技術規劃的一致性、覆蓋、風險及追溯關係。
 - `generate_skill`：輸出 canonical `SKILL.md`，或在不改變核心規則的前提下加入情境化指引。
 
-完整的專案背景與設計理念請見 [LogicMCP Wiki](https://github.com/mydrego-James/LogicMCP_Server/wiki)。
+完整的專案背景、PxDCA 雙軸模型與原 LogicMCP 故事請見 [PxDCA Wiki](https://github.com/mydrego-James/PxDCA/wiki)。
 
 ## 1. 故事
 
-AI 已經能快速產生程式碼、文件、架構與測試，軟體開發的瓶頸也因此改變：執行速度越快，方向錯誤造成的返工成本就越高。
+AI 已經能快速產生程式碼、文件、架構與測試，軟體開發的瓶頸也因此從「產出速度」轉向「方向校準與邊界控制」。執行越快，方向錯誤、責任越界或任務層級混亂造成的返工成本就越高。
 
 常見問題不是「做不出來」，而是：
 
@@ -23,26 +25,39 @@ AI 已經能快速產生程式碼、文件、架構與測試，軟體開發的�
 - 需求提出者、開發者與 AI 對目標的理解不同。
 - AI 自行補上看似合理、但未經確認的條件。
 - 局部功能正確，整體業務邏輯卻偏離原始目的。
-- 工作分派後，執行者只看到任務，沒有完整背景與限制。
-- 開發中出現新條件，卻沒有重新檢查原始規劃。
+- 大型規劃沒有降解成可驗證的小型任務，實作者同時處理全域架構與底層細節。
+- 工作分派後，執行者只看到局部任務，遺失上層目標、背景與限制。
+- 產出完成後缺乏可證偽的品質門禁，結果「看似完成」卻無法驗證。
 
-LogicMCP 的目的不是限制開發速度，也不取代需求提出者、專案經理、顧問、架構師、開發者或 AI Agent。它提供一套可以重複使用的邏輯校準流程，讓人與 AI 在重要工作開始前先建立共同基線。
+PxDCA 的目的不是把 PDCA 寫成一條強制流水線，也不是取代需求提出者、專案經理、架構師或 AI。PDCA 在這裡是一種 AI 必須持續具備的理解力：先掌握現況與目標，再依證據行動；產生結果後重新對照來源，必要時修正、補問或重新規劃。這種精神從 Q0 與 QA 階段就已經開始存在。
 
-這套流程可視為適合軟體開發的遞迴 PDCA：
+PxDCA 中的 `x` 有兩種互相連接的含意：
+
+1. **職務焦點：PM、PG、PQ**
+
+   - `PM`：收集需求、釐清目標與範圍，建立需求規劃文字。
+   - `PG`：承接 PM 已確認的內容，建立技術選型與架構規劃文字，不得自行擴增業務需求。
+   - `PQ`：對齊 PM 與 PG 的上下依據，檢查技術規劃是否有需求來源、需求是否獲得技術回應，以及缺口應回到哪一端修正。PQ 不是另一個獨立規劃任務。
+
+2. **任務交付展開：`P1 / D1 / C1 / A1 → P2 ...`**
+
+   前一項工作整理出的目標、證據、決策與檢查結果，可以成為下一項工作的輸入。這表示任務之間要有可追溯的交付關係，不表示 MCP Server 必須依序執行一套固定的 PDCA 狀態機。
+
+因此目前的核心關係是：
 
 ```text
-P — Problem / Purpose：確認問題、目標、範圍與限制
-                ↓
-D — Design：將需求轉換成可執行的技術與工作規劃
-                ↓
-C — Check / Challenge：檢查缺漏、矛盾、風險與偏離
-                ↓
-A — Action：交付開發者或 Agent 執行、測試與驗證
+PM：需求收集與需求規劃文字
+          │ 有來源的需求基線
+          ▼
+PG：技術選型與架構規劃文字
+          │ 需求與技術的對應證據
+          ▼
+PQ：檢查 PM ↔ PG 的上下連接與偏離
 ```
 
-它可以套用在整個專案，也可以在模組、API、資料庫、UI、單一功能或錯誤修正中重新啟動。上層已確認的目標與限制會成為下一層工作的基線。
+只有 PM 與 PG 負責產生主要規劃內容；PQ 負責對齊、指出缺口與修正方向。整個過程以文字為產物，以來源、回答、決策與對應關係為證據，避免 AI 自行補充未經授權的需求或技術範圍。
 
-> AI 可以持續執行，LogicMCP 負責持續校準方向。
+> AI 負責高速推進，PxDCA 負責鎖定邊界與工程方向。
 
 ## 2. 安裝
 
@@ -57,8 +72,8 @@ A — Action：交付開發者或 Agent 執行、測試與驗證
 取得專案：
 
 ```powershell
-git clone https://github.com/mydrego-James/LogicMCP_Server.git
-cd LogicMCP_Server
+git clone https://github.com/mydrego-James/PxDCA.git
+cd PxDCA
 ```
 
 建立本機設定：
@@ -98,8 +113,8 @@ http://127.0.0.1:8000/mcp
 需求：Docker Engine；若使用 Compose，需同時安裝 Docker Compose。
 
 ```powershell
-git clone https://github.com/mydrego-James/LogicMCP_Server.git
-cd LogicMCP_Server
+git clone https://github.com/mydrego-James/PxDCA.git
+cd PxDCA
 Copy-Item .env.example .env
 docker compose up --build -d mcp
 ```
@@ -132,14 +147,14 @@ LOGICMCP_OUTPUT_DIR=./output
 
 ## 3. 使用：VS Code 範例
 
-### 3.1 連接 LogicMCP
+### 3.1 連接 PxDCA
 
-先啟動 LogicMCP Server，然後在要使用它的 VS Code workspace 建立 `.vscode/mcp.json`：
+先啟動 PxDCA Server，然後在要使用它的 VS Code workspace 建立 `.vscode/mcp.json`：
 
 ```json
 {
   "servers": {
-    "logicmcp": {
+    "pxdca": {
       "type": "http",
       "url": "http://127.0.0.1:8000/mcp"
     }
@@ -151,8 +166,8 @@ LOGICMCP_OUTPUT_DIR=./output
 
 1. 開啟 Command Palette（`Ctrl+Shift+P`）。
 2. 執行 `MCP: List Servers`。
-3. 啟動 `logicmcp`。
-4. 在 Chat 的工具清單中確認可看到四個 LogicMCP Tools。
+3. 啟動 `pxdca`。
+4. 在 Chat 的工具清單中確認可看到四個 PxDCA Tools。
 
 VS Code 所使用的 MCP Client 必須支援 MCP Sampling，因為 Server 會在封閉流程中請 Client 的模型執行受控推理。
 
@@ -161,7 +176,7 @@ VS Code 所使用的 MCP Client 必須支援 MCP Sampling，因為 Server 會在
 可以直接在 Chat 中描述目標：
 
 ```text
-請使用 LogicMCP，為「建立一套設備維護管理系統」建立需求書，
+請使用 PxDCA，為「建立一套設備維護管理系統」建立需求書，
 使用 professional profile，並逐題向我確認。
 ```
 
@@ -202,7 +217,7 @@ Server 會回傳 `session_id`、目前問題與訪談狀態。回答問題時，
 需求書完成後，在 Chat 中要求：
 
 ```text
-請使用同一個 LogicMCP session 產生架構書。
+請使用同一個 PxDCA session 產生架構書。
 ```
 
 對應呼叫：
@@ -241,7 +256,7 @@ Server 會回傳 `session_id`、目前問題與訪談狀態。回答問題時，
 
 ## 4. 目前架構
 
-LogicMCP 對 MCP Client 公開三個完整開發工作流與一個 Skill 產生工具。內部 Prompts、Policies、Profiles、Schemas、Validators、狀態轉移與 Renderers 都是 Server 私有實作，不會註冊成額外的 MCP Prompts、Resources 或 Tools。
+PxDCA 對 MCP Client 公開三個文字產物操作與一個 Skill 產生工具。MCP Tools 是呼叫介面；真正讓 AI 理解 PM、PG、PQ 邊界與 PDCA 精神的是 Server 內部的 Prompt TXT。Policies、Profiles、Schemas、Validators、狀態轉移與 Renderers 同樣屬於私有實作，不會註冊成額外的 MCP Prompts、Resources 或 Tools。
 
 ```text
 VS Code／其他 MCP Client
@@ -249,7 +264,7 @@ VS Code／其他 MCP Client
         │ MCP + Client LLM Sampling
         ▼
 ┌─────────────────────────────────────────────┐
-│ LogicMCP Server                             │
+│ PxDCA Server                                │
 │                                             │
 │  generate_requirements                      │
 │  generate_architecture                      │
@@ -273,18 +288,18 @@ Q0
  ↓
 generate_requirements
  ↓ 逐題訪談、驗證並持久化狀態
-需求書
+PM 需求書
  ↓
 generate_architecture
- ↓ 需求對齊與技術規劃
-架構書
+ ↓ 承接 PM 證據，進行技術選型與規劃
+PG 架構書
  ↓
 run_audit
- ↓ 一致性、覆蓋、追溯與風險檢查
-稽核報告
+ ↓ 以 PQ 視角對齊 PM 與 PG
+對齊與稽核報告
 ```
 
-MCP 連線本身不是工作狀態。Server 只保存通過驗證的狀態，並以 `session_id` 恢復流程。需求、架構及稽核產物預設位於 `output/<session_id>/`，工作階段位於 `output/.logicmcp/sessions/`，Server logs 位於 `logs/fastmcp/`。
+MCP 連線本身不是工作狀態。Server 只保存通過驗證的狀態，並以 `session_id` 恢復流程。需求、架構及稽核產物預設位於 `output/<session_id>/`，工作階段位於 `output/.logicmcp/sessions/`，Server logs 位於 `logs/fastmcp/`。`.logicmcp` 是目前保留的相容性目錄名稱。
 
 ### 專案結構
 
@@ -321,7 +336,7 @@ compose.yaml                Docker Compose service
 
 [tools/SKILL.md](tools/SKILL.md) 是可獨立交給 AI 讀取的 canonical 模板。它以原始 PDCA 精神規範三件事：
 
-1. 讓 AI 分辨原始 `Plan → Do → Check → Act`，以及 LogicMCP 專案定義的 `Problem/Purpose → Design → Check/Challenge → Action`。
+1. 讓 AI 分辨原始 `Plan → Do → Check → Act`，以及 PxDCA（原 LogicMCP）在目前 MCP 工作流中的 `Problem/Purpose → Design → Check/Challenge → Action`。
 2. 讓 AI 依目前要做的工作，檢查既有需求、規格、規劃及架構內容是否足夠，而不是只看檔名。
 3. 當資料不足且使用者同意時，讓 AI 正確使用 `generate_requirements`、`generate_architecture`、`run_audit` 與 `session_id` 接續規則。
 
@@ -329,20 +344,20 @@ Skill 不是持久服務、背景監控器或 MCP 必要依賴。使用者可以
 
 ### Skill 不是必要流程
 
-LogicMCP 的安裝、啟動及前三個開發工作流都不要求使用 Skill。使用者可以依自己的 IDE、Agent、網路 Chat 或開發習慣選擇：
+PxDCA 的安裝、啟動及前三個開發工作流都不要求使用 Skill。使用者可以依自己的 IDE、Agent、網路 Chat 或開發習慣選擇：
 
-- 直接呼叫 LogicMCP Tools。
+- 直接呼叫 PxDCA Tools。
 - 使用自己編寫的 Prompt 或 Agent 規則。
 - 在支援 Skill 的工具中引用 `SKILL.md`。
 - 完全不使用 Skill。
 
-`SKILL.md` 只是讓 AI 預先理解兩種 PDCA 的差異、如何判斷目前狀態是否足夠，以及資料不足時如何正確使用 LogicMCP。
+`SKILL.md` 只是讓 AI 預先理解兩種 PDCA 的差異、如何判斷目前狀態是否足夠，以及資料不足時如何正確使用 PxDCA MCP Tools。
 
 ### 在 AI 工具中載入 Skill
 
 不同 IDE、Coding Agent 與網路 Chat 對 Skill 的支援方式不同，目前沒有所有工具共用的單一安裝或呼叫標準。請以實際使用工具的說明為準。
 
-在支援以名稱呼叫 Skill 的環境中，使用 Skill 自己的名稱即可。這份模板在 frontmatter 中定義的名稱是 `logicmcp-pdca`，因此可在主要任務開始前這樣引用：
+在支援以名稱呼叫 Skill 的環境中，使用 Skill 自己的名稱即可。這份模板目前仍保留原專案的相容性名稱 `logicmcp-pdca`，因此可在主要任務開始前這樣引用：
 
 ```text
 /logicmcp-pdca
@@ -366,12 +381,12 @@ SKILL.md
 → 支援名稱呼叫時，可使用 /logicmcp-pdca 或 /<自訂技能名稱>
 ```
 
-在 LogicMCP 中，MCP Server 提供可執行的需求、架構、稽核與 Skill 產生能力；`SKILL.md` 則讓 AI 在本地或沙盒上下文中理解兩種 PDCA、判斷目前狀態，以及在必要時正確呼叫 MCP。兩者可以一起使用，也可以依使用者環境分開使用。
+在 PxDCA 中，MCP Server 提供可執行的需求、架構、稽核與 Skill 產生能力；`SKILL.md` 則讓 AI 在本地或沙盒上下文中理解兩種 PDCA、判斷目前狀態，以及在必要時正確呼叫 MCP。兩者可以一起使用，也可以依使用者環境分開使用。
 
 若使用的 IDE 或網路 Chat 不支援 Skill，也可以將 `SKILL.md` 上傳、拖入對話或貼入內容，明確要求 LLM 先讀取再處理任務：
 
 ```text
-請先讀取附加的 SKILL.md，確認其中兩種 PDCA 定義與 LogicMCP 使用規則，
+請先讀取附加的 SKILL.md，確認其中兩種 PDCA 定義與 PxDCA 使用規則，
 再檢查目前專案是否具備足夠的開發基線。
 ```
 
@@ -415,38 +430,38 @@ generate_skill
 → AI 讀取後才依 Skill 判斷狀態及選擇是否使用 MCP
 ```
 
-本機 MCP Client 通常可直接存取 `artifact.path`。若 LogicMCP 部署在遠端，該路徑屬於 Server filesystem，Client 應使用 Tool result 中的 `content` 保存或載入 Skill，不應假設能直接開啟 Server 路徑。
+本機 MCP Client 通常可直接存取 `artifact.path`。若 PxDCA 部署在遠端，該路徑屬於 Server filesystem，Client 應使用 Tool result 中的 `content` 保存或載入 Skill，不應假設能直接開啟 Server 路徑。
 
 ## 6. 未來計畫
 
-目前的 LogicMCP Server 是一個可執行的前哨站，先驗證人與 AI 能否共用一套可重複、可追溯的邏輯校準流程。後續方向包括：
+目前的 PxDCA Server 是一個可執行的文字規劃前哨站：透過 PM 需求收集、PG 技術規劃與 PQ 上下對齊，驗證 AI 是否能持續依據來源工作而不過度延伸。後續方向包括：
 
 1. **驗證與改良可選的 `SKILL.md`**
 
-   以實際 AI 使用案例驗證狀態判斷、兩種 PDCA 辨識及 MCP 呼叫規則是否清楚。
+   以實際 AI 使用案例驗證 AI 是否能理解 PDCA 是持續判斷精神，而不是必須機械執行的工作流水線。
 
-2. **支援更細緻的遞迴 PDCA**
+2. **強化 PM 需求證據與邊界**
 
-   讓專案、模組、功能、API、資料庫、UI 與錯誤修正可以建立局部流程，同時繼承上層已確認的目標與限制。
+   讓每項需求都能回到 Q0、QA 回答、已確認假設與使用者授權，避免 AI 將建議自動升格為需求。
 
-3. **擴充 Profiles、Policies 與 Templates**
+3. **強化 PG 技術選型對應**
 
-   逐步驗證哪些需求欄位、規劃內容與檢查規則真正能降低返工，而不是單純增加文件篇幅。
+   讓技術選型、模組責任與架構決策逐項對應 PM 需求；技術規劃只能在需求授權範圍內展開。
 
-4. **強化跨階段追溯與變更影響分析**
+4. **強化 PQ 上下對齊**
 
-   將需求、架構決策、風險、測試與交付結果建立更完整的關聯。
+   PQ 不建立另一份獨立規劃，而是確認 PM 與 PG 的覆蓋、衝突、假設與追溯關係，並指出修正應回到需求端或技術端。
 
-5. **增加 Client 範例與相容性驗證**
+5. **保存任務交付展開的依據**
 
-   驗證 VS Code 以外的 MCP Clients、不同模型及不同 Agent runtime 是否能維持一致流程。
+   保存 `P1 / D1 / C1 / A1 → P2 ...` 之間的目標、證據、決策與交付關係，讓下一項文字規劃知道自己承接了什麼。
 
-6. **改善測試、可觀測性與部署能力**
+6. **擴充 Profiles、Templates、Clients 與部署驗證**
 
-   擴充工作流程測試、失敗恢復、記錄與正式部署所需的安全邊界。
+   驗證不同領域的能力 TXT、需求與架構文件模板，以及 VS Code 以外的 MCP Clients、模型與 Agent runtime。
 
-LogicMCP 不追求一次建立完整的軟體生命週期管理平台。它會從小型、可驗證的流程開始，逐步確認哪些結構真的能協助開發者與 AI 保持在正確方向上。
+PxDCA 不追求成為程式碼生成器或強制執行的流程引擎。它從可追溯的文字規劃開始，讓 AI 在需求收集、技術選型與上下對齊時都保有 PDCA 精神與邊界意識。
 
 ---
 
-GitHub 保存程式碼與版本歷史；LogicMCP 保存成果背後的需求、規劃與檢查邏輯。
+GitHub 保存程式碼與版本歷史；PxDCA 保存成果背後的需求、規劃、邊界與檢查邏輯。
