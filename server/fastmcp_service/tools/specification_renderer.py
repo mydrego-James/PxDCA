@@ -4,7 +4,7 @@ from typing import Any
 
 
 SCRIPT = Path(__file__).parent / "render_specification.py"
-_spec = importlib.util.spec_from_file_location("logicmcp_spec_renderer", SCRIPT)
+_spec = importlib.util.spec_from_file_location("pxdca_spec_renderer", SCRIPT)
 if _spec is None or _spec.loader is None:
     raise ImportError("Unable to load specification renderer")
 _module = importlib.util.module_from_spec(_spec)

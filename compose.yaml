@@ -1,4 +1,4 @@
-name: logicmcp-server
+name: pxdca-server
 
 services:
   mcp:
@@ -6,20 +6,28 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      MCP_HOST: 0.0.0.0
-      MCP_PORT: 8000
-      MCP_PATH: "${MCP_PATH:-/mcp}"
-      MCP_TRANSPORT: http
-      MCP_OUTPUT_ROOT: /srv/logicmcp/output
-      MCP_STATE_ROOT: /srv/logicmcp/output/.logicmcp/sessions
+      PXDCA_CONFIG: /srv/pxdca/config/pxdca.toml
+      PXDCA_HOST: 0.0.0.0
+      PXDCA_PORT: 8000
+      PXDCA_TRANSPORT: http
+      PXDCA_STATE_ROOT: /srv/pxdca/data/state
+      PXDCA_ARTIFACT_ROOT: /srv/pxdca/data/artifacts
+      PXDCA_LOG_ROOT: /srv/pxdca/data/logs
     ports:
-      - "${LOGICMCP_BIND_HOST:-127.0.0.1}:${LOGICMCP_HOST_PORT:-8000}:8000"
+      - "${PXDCA_BIND_HOST:-127.0.0.1}:${PXDCA_HOST_PORT:-8000}:8000"
     volumes:
-      - "${LOGICMCP_LOG_DIR:-./logs}:/srv/logicmcp/logs"
-      - "${LOGICMCP_OUTPUT_DIR:-./output}:/srv/logicmcp/output"
+      - "${PXDCA_CONFIG_FILE:-./config/pxdca.toml}:/srv/pxdca/config/pxdca.toml:ro"
+      - pxdca-state:/srv/pxdca/data/state
+      - pxdca-artifacts:/srv/pxdca/data/artifacts
+      - pxdca-logs:/srv/pxdca/data/logs
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1',8000),2); s.close()"]
       interval: 5s
       timeout: 3s
       retries: 12
     restart: unless-stopped
+
+volumes:
+  pxdca-state:
+  pxdca-artifacts:
+  pxdca-logs:

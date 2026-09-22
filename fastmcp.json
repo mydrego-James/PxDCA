@@ -7,7 +7,7 @@
   },
   "environment": {
     "type": "uv",
-    "python": ">=3.11",
+    "python": ">=3.12,<3.14",
     "requirements": "requirements.txt"
   },
   "deployment": {
@@ -17,8 +17,7 @@
     "path": "/mcp",
     "log_level": "INFO",
     "env": {
-      "MCP_OUTPUT_ROOT": "./output",
-      "MCP_STATE_ROOT": "./output/.logicmcp/sessions"
+      "PXDCA_CONFIG": "./config/pxdca.toml"
     }
   }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministically render LogicMCP software specification Markdown files."""
+"""Deterministically render PxDCA software specification Markdown files."""
 
 from __future__ import annotations
 

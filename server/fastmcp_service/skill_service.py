@@ -1,4 +1,4 @@
-"""Generate an optional LogicMCP Skill without changing requirement sessions."""
+"""Generate an optional PxDCA Skill without changing requirement sessions."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing import Any
 from fastmcp import Context
 
 from .mcp_instance import OUTPUT_ROOT, ROOT, logger
+from .settings import settings
 
 
 TEMPLATE_PATH = ROOT / "tools" / "SKILL.md"
@@ -35,16 +36,20 @@ class SkillGenerationError(RuntimeError):
 
 
 def _resolve_output_dir(value: str) -> Path:
-    requested = Path(value.strip()) if value.strip() else Path("logicmcp-pdca")
+    if value.strip() and not settings.artifacts.allow_tool_override:
+        raise SkillGenerationError(
+            "OUTPUT_OVERRIDE_DISABLED",
+            "output_dir 已由 PxDCA 外部設定管理；如需開放 Tool 覆寫，請設定 allow_tool_override。",
+        )
+    requested = Path(value.strip()) if value.strip() else Path("pxdca-pdca")
     if requested.is_absolute():
-        resolved = requested.resolve()
-    else:
-        resolved = (OUTPUT_ROOT / requested).resolve()
-        if resolved != OUTPUT_ROOT and OUTPUT_ROOT not in resolved.parents:
-            raise SkillGenerationError(
-                "INVALID_OUTPUT_DIR",
-                "相對 output_dir 必須位於 MCP_OUTPUT_ROOT 之內。",
-            )
+        raise SkillGenerationError("INVALID_OUTPUT_DIR", "output_dir 不可使用絕對路徑。")
+    resolved = (OUTPUT_ROOT / requested).resolve()
+    if resolved != OUTPUT_ROOT and OUTPUT_ROOT not in resolved.parents:
+        raise SkillGenerationError(
+            "INVALID_OUTPUT_DIR",
+            "相對 output_dir 必須位於 PxDCA artifact root 之內。",
+        )
     resolved.mkdir(parents=True, exist_ok=True)
     return resolved
 
@@ -85,7 +90,7 @@ async def _optimized_addition(
     system_prompt = """You add optional, context-specific guidance to an existing AI Skill.
 Return Markdown body content only: no YAML frontmatter and no code fence.
 Do not redefine, replace, or contradict the canonical rules.
-Do not change the meanings of original Plan-Do-Check-Act or LogicMCP's
+Do not change the meanings of original Plan-Do-Check-Act or PxDCA's
 Problem/Purpose-Design-Check/Challenge-Action model. Do not change the names,
 parameters, prerequisites, or session behavior of generate_requirements,
 generate_architecture, run_audit, or generate_skill. Do not claim the Skill is
@@ -145,20 +150,23 @@ async def generate_skill_document(
                 + addition.rstrip()
                 + "\n"
             )
-        target = _resolve_output_dir(output_dir) / "SKILL.md"
-        try:
-            target.write_text(content, encoding="utf-8", newline="\n")
-        except OSError as error:
-            raise SkillGenerationError(
-                "SKILL_OUTPUT_FAILED",
-                "Server 無法寫入 SKILL.md。",
-            ) from error
-        logger.info("[SKILL] generated mode=%s path=%s", mode, target)
+        artifact = None
+        if settings.artifacts.enabled:
+            target = _resolve_output_dir(output_dir) / "SKILL.md"
+            try:
+                target.write_text(content, encoding="utf-8", newline="\n")
+            except OSError as error:
+                raise SkillGenerationError(
+                    "SKILL_OUTPUT_FAILED",
+                    "Server 無法寫入 SKILL.md。",
+                ) from error
+            artifact = {"kind": "skill", "path": str(target)}
+            logger.info("[SKILL] generated mode=%s path=%s", mode, target)
         return {
             "status": "completed",
             "workflow": "skill_generation",
             "mode": mode,
-            "artifact": {"kind": "skill", "path": str(target)},
+            "artifact": artifact,
             "content": content,
         }
     except SkillGenerationError as error:

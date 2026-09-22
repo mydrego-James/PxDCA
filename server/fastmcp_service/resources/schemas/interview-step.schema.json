@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "schema://interview-step",
-  "title": "LogicMCP Requirement Flow Step",
+  "title": "PxDCA Requirement Flow Step",
   "description": "Compatibility entrypoint for one explicit consultant or specialist stage.",
   "oneOf": [
     {"$ref": "consultant-plan.schema.json"},

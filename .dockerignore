@@ -5,3 +5,5 @@
 !server/**
 !tools/
 !tools/SKILL.md
+!config/
+!config/pxdca.toml

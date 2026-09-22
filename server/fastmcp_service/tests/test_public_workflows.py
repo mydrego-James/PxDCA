@@ -7,14 +7,17 @@ import unittest
 from pathlib import Path
 
 
-_RUNTIME = tempfile.TemporaryDirectory(prefix="logicmcp-tests-")
-os.environ["MCP_OUTPUT_ROOT"] = str(Path(_RUNTIME.name) / "output")
-os.environ["MCP_STATE_ROOT"] = str(Path(_RUNTIME.name) / "state")
+_RUNTIME = tempfile.TemporaryDirectory(prefix="pxdca-tests-")
+os.environ["PXDCA_ARTIFACT_ROOT"] = str(Path(_RUNTIME.name) / "output")
+os.environ["PXDCA_STATE_ROOT"] = str(Path(_RUNTIME.name) / "state")
+os.environ["PXDCA_LOG_ROOT"] = str(Path(_RUNTIME.name) / "logs")
+os.environ["PXDCA_ALLOW_TOOL_OUTPUT_OVERRIDE"] = "true"
 
 from fastmcp import Client  # noqa: E402
 
 from .. import prompts  # noqa: E402
 from ..server import mcp  # noqa: E402
+from ..settings import settings  # noqa: E402
 
 
 def _request(params) -> dict:
@@ -159,6 +162,29 @@ def _question(
 
 
 class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
+    async def test_artifact_output_is_optional(self) -> None:
+        original = settings.artifacts.enabled
+        object.__setattr__(settings.artifacts, "enabled", False)
+        try:
+            async with Client(mcp) as client:
+                result = (await client.call_tool("generate_skill", {"mode": "template"})).data
+            self.assertEqual(result["status"], "completed")
+            self.assertIsNone(result["artifact"])
+            self.assertIn("generate_requirements", result["content"])
+        finally:
+            object.__setattr__(settings.artifacts, "enabled", original)
+
+    async def test_absolute_artifact_destination_is_rejected(self) -> None:
+        async with Client(mcp) as client:
+            result = (
+                await client.call_tool(
+                    "generate_skill",
+                    {"mode": "template", "output_dir": str(Path(_RUNTIME.name).resolve())},
+                )
+            ).data
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["error"]["code"], "INVALID_OUTPUT_DIR")
+
     def test_every_registered_capability_profile_loads_its_txt(self) -> None:
         service_root = Path(__file__).resolve().parents[1]
         registry = json.loads(
@@ -207,7 +233,7 @@ class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(actual, baseline["tools"])
 
     async def test_generate_canonical_and_optimized_skill(self) -> None:
-        state_root = Path(os.environ["MCP_STATE_ROOT"])
+        state_root = Path(os.environ["PXDCA_STATE_ROOT"])
         sessions_before = set(state_root.glob("*.json"))
         async with Client(mcp) as client:
             canonical = (
@@ -276,7 +302,7 @@ class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
             audit = (await client.call_tool("run_audit", {"session_id": session_id})).data
             self.assertEqual(audit["conclusion"], "draft_ready_for_review")
 
-        state_path = Path(os.environ["MCP_STATE_ROOT"]) / f"{session_id}.json"
+        state_path = Path(os.environ["PXDCA_STATE_ROOT"]) / f"{session_id}.json"
         state = json.loads(state_path.read_text(encoding="utf-8"))
         self.assertEqual(state["phase"], "audit_completed")
         self.assertEqual(state["requirement_state"]["turn_count"], 3)

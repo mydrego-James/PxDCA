@@ -1,29 +1,30 @@
 import datetime
 import logging
 import os
-from pathlib import Path
 
 from fastmcp import FastMCP
 
-ROOT = Path(__file__).resolve().parents[2]
-OUTPUT_ROOT = Path(os.environ.get("MCP_OUTPUT_ROOT", ROOT / "output")).resolve()
-OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-STATE_ROOT = Path(
-    os.environ.get("MCP_STATE_ROOT", OUTPUT_ROOT / ".logicmcp" / "sessions")
-).resolve()
+from .settings import PROJECT_ROOT, settings
+
+
+ROOT = PROJECT_ROOT
+OUTPUT_ROOT = settings.artifacts.root
+if settings.artifacts.enabled:
+    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+STATE_ROOT = settings.state.root
 STATE_ROOT.mkdir(parents=True, exist_ok=True)
-MCPS_LOG_DIR = ROOT / "logs" / "fastmcp"
+MCPS_LOG_DIR = settings.logging.root
 MCPS_LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-mcp = FastMCP("LogicMCP Server", version="3.0.0")
+mcp = FastMCP("PxDCA Server", version="3.1.0")
 
 def setup_logger() -> logging.Logger:
     """Create the service logger without depending on optional root tooling."""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     log_file = MCPS_LOG_DIR / f"mcps-{timestamp}.log"
 
-    service_logger = logging.getLogger("logicmcp.fastmcp")
-    service_logger.setLevel(logging.INFO)
+    service_logger = logging.getLogger("pxdca.fastmcp")
+    service_logger.setLevel(settings.logging.level)
     service_logger.propagate = False
     service_logger.handlers.clear()
 
@@ -39,6 +40,24 @@ def setup_logger() -> logging.Logger:
     return service_logger
 
 logger = setup_logger()
+logger.info("PxDCA configuration loaded from %s", settings.config_path)
+if settings.legacy_environment:
+    logger.warning(
+        "Deprecated LogicMCP environment names detected: %s; use PXDCA_* settings instead.",
+        ", ".join(settings.legacy_environment),
+    )
+legacy_state_root = ROOT / "output" / ".logicmcp" / "sessions"
+if (
+    "PXDCA_STATE_ROOT" not in os.environ
+    and legacy_state_root.is_dir()
+    and not any(STATE_ROOT.glob("*.json"))
+):
+    logger.warning(
+        "Legacy LogicMCP sessions found at %s. Set PXDCA_STATE_ROOT to that path "
+        "for temporary access, or migrate them to %s.",
+        legacy_state_root,
+        STATE_ROOT,
+    )
 
 UVICORN_LOG_CONFIG = {
     "version": 1,

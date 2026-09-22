@@ -60,7 +60,7 @@ def render_requirement_spec(payload: dict[str, Any], output_path: str | Path) ->
 
     parties_items = [
         "甲方 (需求提出方)：業務與使用者代表",
-        "乙方 (技術交付方)：LogicMCP 自動化架構師團隊",
+        "乙方 (技術交付方)：PxDCA 自動化架構師團隊",
     ]
 
     overview_lines = [
@@ -284,7 +284,7 @@ def render_enterprise_delivery(payload: dict[str, Any], output_path: str | Path)
     if not parties_items:
         parties_items = [
             "甲方 (需求提出方)：業務與使用者代表",
-            "乙方 (技術交付方)：LogicMCP 自動化架構師團隊",
+            "乙方 (技術交付方)：PxDCA 自動化架構師團隊",
         ]
 
     # Scope
@@ -339,7 +339,7 @@ def render_enterprise_delivery(payload: dict[str, Any], output_path: str | Path)
     if not change_items:
         change_items = [
             "所有範疇變更須經由雙方代表簽署 CR (Change Request) 變更單",
-            "技術影響評估與時程調整需按 LogicMCP 狀態機追溯",
+            "技術影響評估與時程調整需按 PxDCA 狀態機追溯",
         ]
 
     # Maintenance Handover

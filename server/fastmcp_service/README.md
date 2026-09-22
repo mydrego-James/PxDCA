@@ -1,4 +1,4 @@
-# LogicMCP FastMCP service
+# PxDCA FastMCP service
 
 This package registers three persistent workflows and one Skill exporter:
 

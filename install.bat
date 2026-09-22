@@ -2,26 +2,24 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-if not exist ".venv\Scripts\python.exe" (
-    echo [LogicMCP] Creating Python virtual environment...
-    where py >nul 2>nul
+where py >nul 2>nul
+if not errorlevel 1 (
+    py -3.13 -c "import sys" >nul 2>nul
     if not errorlevel 1 (
-        py -3.11 -m venv .venv 2>nul
-        if errorlevel 1 py -3 -m venv .venv
-    ) else (
-        python -m venv .venv
+        py -3.13 scripts\bootstrap.py
+        exit /b %errorlevel%
     )
-    if errorlevel 1 (
-        echo [ERROR] Python 3.11 or newer is required.
-        exit /b 1
+    py -3.12 -c "import sys" >nul 2>nul
+    if not errorlevel 1 (
+        py -3.12 scripts\bootstrap.py
+        exit /b %errorlevel%
     )
 )
 
-echo [LogicMCP] Installing Python dependencies...
-".venv\Scripts\python.exe" -m pip install --upgrade pip
-if errorlevel 1 exit /b 1
-".venv\Scripts\python.exe" -m pip install -r requirements.txt
-if errorlevel 1 exit /b 1
-
-echo [LogicMCP] FastMCP service installation complete.
-exit /b 0
+python -c "import sys; assert (3,12) <= sys.version_info[:2] < (3,14)" >nul 2>nul
+if errorlevel 1 (
+    echo [ERROR] PxDCA requires Python 3.12 or 3.13.
+    exit /b 1
+)
+python scripts\bootstrap.py
+exit /b %errorlevel%

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://logicmcp.local/schemas/software-specification-v1.json",
-  "title": "LogicMCP Software Specification Payload",
+  "$id": "https://pxdca.local/schemas/software-specification-v1.json",
+  "title": "PxDCA Software Specification Payload",
   "type": "object",
   "required": ["profile", "project", "scope", "requirements", "technical", "assumptions", "unresolved_decisions"],
   "properties": {

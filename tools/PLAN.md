@@ -1,4 +1,4 @@
-# LogicMCP Server 維護工具開發計畫
+# PxDCA Server 維護工具開發計畫
 
 ## 邊界
 
@@ -39,7 +39,7 @@ tools/
 - `.env` 必要欄位、port 格式與 output path。
 - `fastmcp.json` JSON 格式及其 entrypoint、requirements path 是否存在。
 - `compose.yaml` 能否由 `docker compose config` 解析。
-- `logs/`、`output/` 是否可寫入。
+- `data/state/`、`data/artifacts/`、`data/logs/` 是否可依設定寫入。
 - 指定 MCP port 是否已被其他 process 使用。
 
 介面：
@@ -75,10 +75,10 @@ tools/
 
 檢查項目：
 
-- `logs/fastmcp/mcps-*.log` 與 `http-*.log` 的檔案數、時間範圍及 error/warning 數量。
+- `data/logs/mcps-*.log` 與 `http-*.log` 的檔案數、時間範圍及 error/warning 數量。
 - MCP initialize/list/call 對應的 HTTP status。
 - Tool started/finished 是否成對。
-- `output/` 新增檔案的 path、size、modified time 與 SHA-256。
+- `data/artifacts/` 新增檔案的 path、size、modified time 與 SHA-256。
 - Credential、Authorization header、request/response body 意外落盤的 pattern scan。
 
 介面：
@@ -115,7 +115,7 @@ MAP.MD
 .env
 .venv/
 logs/
-output/
+data/
 __pycache__/
 credentials
 ```
@@ -123,8 +123,8 @@ credentials
 介面：
 
 ```powershell
-.\.venv\Scripts\python.exe tools\backup.py --destination D:\LogicMCPBackup --dry-run
-.\.venv\Scripts\python.exe tools\backup.py --destination D:\LogicMCPBackup --execute
+.\.venv\Scripts\python.exe tools\backup.py --destination D:\PxDCABackup --dry-run
+.\.venv\Scripts\python.exe tools\backup.py --destination D:\PxDCABackup --execute
 ```
 
 驗收：輸出 archive manifest 與 SHA-256；目的地已存在時不覆寫；任何 resolved path
@@ -156,7 +156,7 @@ MCP endpoint
 
 ## 共用品質要求
 
-- Python 3.11+，Windows PowerShell 可直接執行。
+- Python 3.12 或 3.13，Windows PowerShell 可直接執行。
 - CLI 使用 `argparse`，成功為 exit code `0`，檢查失敗為非零。
 - 路徑一律從 repository root resolve，不依賴目前 shell directory。
 - 不讀取或輸出 `.env` value；只檢查必要 key 是否存在及格式。

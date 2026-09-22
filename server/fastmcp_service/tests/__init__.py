@@ -1,1 +1,1 @@
-"""LogicMCP service tests."""
+"""PxDCA service tests."""

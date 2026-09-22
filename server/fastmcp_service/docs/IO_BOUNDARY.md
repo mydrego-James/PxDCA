@@ -1,4 +1,4 @@
-# LogicMCP input, state, output, and log boundary
+# PxDCA input, state, output, and log boundary
 
 ## Input
 
@@ -9,8 +9,8 @@ owns sequencing and validation. `generate_skill` reads the canonical
 
 ## State
 
-- Default path: `output/.logicmcp/sessions/`
-- Override: `MCP_STATE_ROOT`
+- Default path: `data/state/`
+- Override: `PXDCA_STATE_ROOT`
 - Key: the `session_id` returned by `generate_requirements`
 - Storage: one atomically replaced JSON file per requirement workflow
 
@@ -20,22 +20,24 @@ container.
 
 ## Output
 
-- Default root: `MCP_OUTPUT_ROOT`, normally `./output/`
-- Default workflow directory: `output/<session_id>/`
-- A relative `output_dir` must remain inside `MCP_OUTPUT_ROOT`.
-- An absolute `output_dir` is treated as an explicitly selected destination.
+- Default root: `PXDCA_ARTIFACT_ROOT`, normally `data/artifacts/`
+- Default workflow directory: `data/artifacts/<session_id>/`
+- A relative `output_dir` must remain inside `PXDCA_ARTIFACT_ROOT`.
+- Absolute `output_dir` values are rejected.
+- Tool-level overrides are disabled unless `artifacts.allow_tool_override=true`.
 
 Generated artifacts are stored with the session so repeated completed calls are
-idempotent.
+idempotent. File generation can be disabled with `artifacts.enabled=false`; the
+validated document remains available in the MCP result and persistent session.
 
 Skill output is independent of requirement state:
 
-- Default directory: `output/logicmcp-pdca/`
+- Default directory: `data/artifacts/pxdca-pdca/`
 - Filename: `SKILL.md`
-- `generate_skill` never creates or updates `MCP_STATE_ROOT`.
+- `generate_skill` never creates or updates `PXDCA_STATE_ROOT`.
 
 ## Logs
 
-`logs/fastmcp/` records Server startup, requests, workflow stages, validation
+`data/logs/` records Server startup, requests, workflow stages, validation
 outcomes, and errors. Session files contain user requirement content and must
 not be copied into logs.

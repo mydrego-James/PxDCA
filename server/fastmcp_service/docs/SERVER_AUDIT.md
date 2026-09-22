@@ -1,4 +1,4 @@
-# LogicMCP Server public-surface audit
+# PxDCA Server public-surface audit
 
 Audit date: 2026-08-08
 
@@ -28,7 +28,7 @@ Public Tools:
 - Client chooses one of three development workflows or the independent Skill exporter.
 - Server owns all internal phase routing and deterministic validation.
 - Server requests language generation through MCP Sampling.
-- Requirement interview state is stored below `MCP_STATE_ROOT` and is not tied
+- Requirement interview state is stored below `PXDCA_STATE_ROOT` and is not tied
   to a transport connection.
 - Skill generation does not create or update requirement state.
 

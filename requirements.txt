@@ -1,2 +1,2 @@
-fastmcp==3.4.5
-jsonschema>=4.0.0
+fastmcp==3.4.7
+jsonschema==4.26.0

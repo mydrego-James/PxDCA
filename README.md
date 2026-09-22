@@ -4,7 +4,7 @@
 >
 > 在任何實作開始之前，先用文字確認需求、技術規劃與交付依據指向同一個方向。
 
-> **改名註記：** 本專案原名為 `LogicMCP_Server`，現已改名為 `PxDCA`。程式內既有的 `LogicMCP`、`LOGICMCP_*` 與 `logicmcp-pdca` 等識別目前為相容性名稱，仍可正常使用。
+> **改名註記：** 本專案原名為 `LogicMCP_Server`，現已正式改名為 `PxDCA`。正式名稱、設定與路徑均使用 PxDCA；舊 `MCP_*` 執行環境變數僅保留有限期讀取相容性並會產生棄用警告，其他舊名稱只保留在歷史或遷移說明中。
 
 PxDCA 是以 [FastMCP 3](https://gofastmcp.com/) 建置的文字規劃與邊界校準服務。它不負責撰寫產品程式碼，而是透過 MCP 與背後的 Prompt TXT，讓 AI 以有依據、可追溯且不過度延伸的方式建立需求與技術規劃。前三個公開 MCP Tools 產生需求書、架構書與 PM／PG 對齊報告；第 4 個 Tool 產生可選的 `SKILL.md`。
 
@@ -13,7 +13,7 @@ PxDCA 是以 [FastMCP 3](https://gofastmcp.com/) 建置的文字規劃與邊界�
 - `run_audit`：以 PQ 視角檢查 PM 需求與 PG 技術規劃的一致性、覆蓋、風險及追溯關係。
 - `generate_skill`：輸出 canonical `SKILL.md`，或在不改變核心規則的前提下加入情境化指引。
 
-完整的專案背景、PxDCA 雙軸模型與原 LogicMCP 故事請見 [PxDCA Wiki](https://github.com/mydrego-James/PxDCA/wiki)。
+完整的專案背景、PxDCA 雙軸模型與原 PxDCA 故事請見 [PxDCA Wiki](https://github.com/mydrego-James/PxDCA/wiki)。
 
 ## 1. 故事
 
@@ -61,13 +61,13 @@ PQ：檢查 PM ↔ PG 的上下連接與偏離
 
 ## 2. 安裝
 
-### 2.1 Git／本機安裝
+### 2.1 本地部署
 
 需求：
 
 - Git
-- Windows
-- Python 3.11 或更新版本
+- Windows、macOS 或 Linux
+- Python 3.13（建議），或 Python 3.12
 
 取得專案：
 
@@ -76,28 +76,26 @@ git clone https://github.com/mydrego-James/PxDCA.git
 cd PxDCA
 ```
 
-建立本機設定：
+非機密執行設定集中在 `config/pxdca.toml`。若要建立自己的設定檔：
 
 ```powershell
-Copy-Item .env.example .env
+Copy-Item config/pxdca.example.toml config/pxdca.local.toml
+$env:PXDCA_CONFIG = "$PWD/config/pxdca.local.toml"
 ```
 
-預設設定如下：
-
-```dotenv
-MCP_HOST=127.0.0.1
-MCP_PORT=8000
-MCP_PATH=/mcp
-MCP_TRANSPORT=http
-MCP_OUTPUT_ROOT=./output
-MCP_STATE_ROOT=./output/.logicmcp/sessions
-```
-
-安裝並啟動：
+Windows 安裝並啟動：
 
 ```powershell
 .\install.bat
 .\run.bat
+```
+
+macOS／Linux 安裝並啟動：
+
+```bash
+chmod +x install.sh run.sh
+./install.sh
+./run.sh
 ```
 
 預設 MCP endpoint：
@@ -106,7 +104,7 @@ MCP_STATE_ROOT=./output/.logicmcp/sessions
 http://127.0.0.1:8000/mcp
 ```
 
-`MCP_STATE_ROOT` 保存需求訪談狀態。若要在 Client 關閉、隔天或 Server 重啟後繼續，請將它放在持久化磁碟中。
+安裝程式只接受 Python 3.12 或 3.13，建立 `.venv`、安裝固定的 FastMCP 3 依賴並執行基本檢查。`state.root` 保存需求訪談狀態；`artifacts` 則是可關閉的附加檔案輸出，兩者並非同一用途。
 
 ### 2.2 Docker 安裝
 
@@ -115,7 +113,6 @@ http://127.0.0.1:8000/mcp
 ```powershell
 git clone https://github.com/mydrego-James/PxDCA.git
 cd PxDCA
-Copy-Item .env.example .env
 docker compose up --build -d mcp
 ```
 
@@ -132,18 +129,24 @@ docker compose logs -f mcp
 docker compose down
 ```
 
-Compose 預設將 `./logs` 與 `./output` 掛載到 Container。需求訪談狀態保存在 `output/.logicmcp/sessions/`，重建 Container 後仍可使用原本的 `session_id` 接續。
+Compose 使用獨立的 state、artifacts、logs named volumes。state volume 保存需求訪談狀態，因此重建 Container 後仍可使用原本的 `session_id` 接續；`docker compose down -v` 會刪除這些 volumes，除非確定不再需要資料，否則不要使用 `-v`。
 
 若需要修改對外 IP、port 或持久化路徑，可調整 `.env`：
 
 ```dotenv
-LOGICMCP_BIND_HOST=127.0.0.1
-LOGICMCP_HOST_PORT=8000
-LOGICMCP_LOG_DIR=./logs
-LOGICMCP_OUTPUT_DIR=./output
+PXDCA_BIND_HOST=127.0.0.1
+PXDCA_HOST_PORT=8000
+PXDCA_CONFIG_FILE=./config/pxdca.toml
 ```
 
 完整設定與 `docker run` 範例請見 [docker.md](docker.md)。
+
+### 憑證與 API 邊界
+
+Repository、Docker image 與範例設定不包含維護者的測試 API、Token 或憑證。
+PxDCA 的受控文字生成由連線中的 MCP Client 透過 Sampling 提供，不會使用專案
+維護者的模型 API 帳號。下載者若要加入網域、授權層、外部 API 或其他服務，必須
+在自己的部署環境使用未提交 Git 的 `.env`、平台 Secret 或 Secret Manager 設定。
 
 ## 3. 使用：VS Code 範例
 
@@ -299,7 +302,7 @@ run_audit
 對齊與稽核報告
 ```
 
-MCP 連線本身不是工作狀態。Server 只保存通過驗證的狀態，並以 `session_id` 恢復流程。需求、架構及稽核產物預設位於 `output/<session_id>/`，工作階段位於 `output/.logicmcp/sessions/`，Server logs 位於 `logs/fastmcp/`。`.logicmcp` 是目前保留的相容性目錄名稱。
+MCP 連線本身不是工作狀態。Server 只保存通過驗證的狀態，並以 `session_id` 恢復流程。工作階段預設位於 `data/state/`；選用的需求、架構及稽核檔案位於 `data/artifacts/<session_id>/`；Server logs 位於 `data/logs/`。實際位置均可由 `config/pxdca.toml` 或 `PXDCA_*` 環境變數覆寫。
 
 ### 專案結構
 
@@ -319,7 +322,8 @@ server/
    └─ docs/                 契約、邊界與工作流程文件
 
 logs/                       Server runtime logs
-output/                     Session 狀態與生成文件
+config/                     PxDCA 外部執行設定
+data/                       執行期 state、artifacts 與 logs（不提交 Git）
 tools/                      維護工具與開發計畫
 └─ SKILL.md                 Canonical AI Skill 模板
 
@@ -336,7 +340,7 @@ compose.yaml                Docker Compose service
 
 [tools/SKILL.md](tools/SKILL.md) 是可獨立交給 AI 讀取的 canonical 模板。它以原始 PDCA 精神規範三件事：
 
-1. 讓 AI 分辨原始 `Plan → Do → Check → Act`，以及 PxDCA（原 LogicMCP）在目前 MCP 工作流中的 `Problem/Purpose → Design → Check/Challenge → Action`。
+1. 讓 AI 分辨原始 `Plan → Do → Check → Act`，以及 PxDCA（原 PxDCA）在目前 MCP 工作流中的 `Problem/Purpose → Design → Check/Challenge → Action`。
 2. 讓 AI 依目前要做的工作，檢查既有需求、規格、規劃及架構內容是否足夠，而不是只看檔名。
 3. 當資料不足且使用者同意時，讓 AI 正確使用 `generate_requirements`、`generate_architecture`、`run_audit` 與 `session_id` 接續規則。
 
@@ -357,15 +361,15 @@ PxDCA 的安裝、啟動及前三個開發工作流都不要求使用 Skill。�
 
 不同 IDE、Coding Agent 與網路 Chat 對 Skill 的支援方式不同，目前沒有所有工具共用的單一安裝或呼叫標準。請以實際使用工具的說明為準。
 
-在支援以名稱呼叫 Skill 的環境中，使用 Skill 自己的名稱即可。這份模板目前仍保留原專案的相容性名稱 `logicmcp-pdca`，因此可在主要任務開始前這樣引用：
+在支援以名稱呼叫 Skill 的環境中，使用 Skill 自己的名稱即可。canonical 模板名稱是 `pxdca-pdca`，因此可在主要任務開始前這樣引用：
 
 ```text
-/logicmcp-pdca
+/pxdca-pdca
 
 請根據目前專案狀態，判斷是否已有足夠的需求、規格與架構內容可開始開發。
 ```
 
-`/logicmcp-pdca` 不是所有平台共用的制式命令，而是以 Skill 名稱呼叫這份模板的示例。若使用者將 frontmatter 的 `name` 改成其他名稱，則應使用 `/<自訂技能名稱>`，例如 `/my-project-pdca`。不同平台也可能透過 Skill 選單、提及、附件或其他介面載入，因此仍應以實際工具的能力為準。
+`/pxdca-pdca` 不是所有平台共用的制式命令，而是以 Skill 名稱呼叫這份模板的示例。若使用者將 frontmatter 的 `name` 改成其他名稱，則應使用 `/<自訂技能名稱>`，例如 `/my-project-pdca`。不同平台也可能透過 Skill 選單、提及、附件或其他介面載入，因此仍應以實際工具的能力為準。
 
 ### MCP 與 Skill 的關係
 
@@ -378,7 +382,7 @@ MCP
 
 SKILL.md
 → 指令與使用知識被引入本地環境或沙盒
-→ 支援名稱呼叫時，可使用 /logicmcp-pdca 或 /<自訂技能名稱>
+→ 支援名稱呼叫時，可使用 /pxdca-pdca 或 /<自訂技能名稱>
 ```
 
 在 PxDCA 中，MCP Server 提供可執行的需求、架構、稽核與 Skill 產生能力；`SKILL.md` 則讓 AI 在本地或沙盒上下文中理解兩種 PDCA、判斷目前狀態，以及在必要時正確呼叫 MCP。兩者可以一起使用，也可以依使用者環境分開使用。
@@ -398,8 +402,7 @@ SKILL.md
 {
   "tool": "generate_skill",
   "arguments": {
-    "mode": "template",
-    "output_dir": "logicmcp-pdca"
+    "mode": "template"
   }
 }
 ```
@@ -411,21 +414,20 @@ SKILL.md
   "tool": "generate_skill",
   "arguments": {
     "mode": "optimized",
-    "customization": "加入本專案既有文件位置與命名慣例",
-    "output_dir": "logicmcp-pdca-custom"
+    "customization": "加入目前團隊的文件檢查規則"
   }
 }
 ```
 
 情境化內容只能附加，不能覆蓋兩種 PDCA 的差異、前三個開發工具的用途或 `session_id` 規則。`generate_skill` 不建立需求 session。
 
-`generate_skill` 只產生 `SKILL.md` 檔案與回傳內容，不會替任何 IDE、Agent 或 Chat 自動安裝、註冊或啟用 Skill。產生後仍需依使用平台的方式引用：
+`generate_skill` 一定回傳 Skill 內容；`artifacts.enabled=true` 時才另外產生 `SKILL.md` 檔案。它不會替任何 IDE、Agent 或 Chat 自動安裝、註冊或啟用 Skill。產生後仍需依使用平台的方式引用：
 
 ```text
 generate_skill
-→ 取得 artifact.path 與 content
+→ 取得 content；有啟用 artifacts 時也取得 artifact.path
 → 安裝到平台指定的 Skill 位置
-→ 支援名稱呼叫時，以 /logicmcp-pdca 或 /<自訂技能名稱> 引用
+→ 支援名稱呼叫時，以 /pxdca-pdca 或 /<自訂技能名稱> 引用
 → 不支援 Skill 時，將 Markdown 明確提供給 LLM
 → AI 讀取後才依 Skill 判斷狀態及選擇是否使用 MCP
 ```
@@ -459,6 +461,10 @@ generate_skill
 6. **擴充 Profiles、Templates、Clients 與部署驗證**
 
    驗證不同領域的能力 TXT、需求與架構文件模板，以及 VS Code 以外的 MCP Clients、模型與 Agent runtime。
+
+7. **FastMCP 4 獨立分支評估**
+
+   `main` 固定在 FastMCP 3.x；FastMCP 4 的 sampling 與介面遷移只在獨立分支驗證，不在目前主線同時維護兩套相容邏輯。
 
 PxDCA 不追求成為程式碼生成器或強制執行的流程引擎。它從可追溯的文字規劃開始，讓 AI 在需求收集、技術選型與上下對齊時都保有 PDCA 精神與邊界意識。
 

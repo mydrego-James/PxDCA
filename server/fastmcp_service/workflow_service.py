@@ -1,4 +1,4 @@
-"""Private, persistent workflow orchestration for LogicMCP's public Tools."""
+"""Private, persistent workflow orchestration for PxDCA's public Tools."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from fastmcp import Context
 
 from . import prompts
 from .mcp_instance import OUTPUT_ROOT, STATE_ROOT, logger
+from .settings import settings
 from .tools.audit_renderer import render_audit
 from .tools.baseline_renderer import render_planning_spec, render_requirement_spec
 from .tools.draft_validator import (
@@ -84,18 +85,28 @@ def _save_session(session: dict[str, Any]) -> None:
 
 
 def _resolve_output_dir(value: str, session_id: str) -> Path:
+    if value.strip() and not settings.artifacts.allow_tool_override:
+        raise WorkflowError(
+            "OUTPUT_OVERRIDE_DISABLED",
+            "output_dir 已由 PxDCA 外部設定管理；如需開放 Tool 覆寫，請設定 allow_tool_override。",
+            recoverable=False,
+        )
     requested = Path(value.strip()) if value.strip() else Path(session_id)
     if requested.is_absolute():
-        resolved = requested.resolve()
-    else:
-        resolved = (OUTPUT_ROOT / requested).resolve()
-        if resolved != OUTPUT_ROOT and OUTPUT_ROOT not in resolved.parents:
-            raise WorkflowError(
-                "INVALID_OUTPUT_DIR",
-                "相對 output_dir 必須位於 MCP_OUTPUT_ROOT 之內。",
-                recoverable=False,
-            )
-    resolved.mkdir(parents=True, exist_ok=True)
+        raise WorkflowError(
+            "INVALID_OUTPUT_DIR",
+            "output_dir 不可使用絕對路徑。",
+            recoverable=False,
+        )
+    resolved = (OUTPUT_ROOT / requested).resolve()
+    if resolved != OUTPUT_ROOT and OUTPUT_ROOT not in resolved.parents:
+        raise WorkflowError(
+            "INVALID_OUTPUT_DIR",
+            "相對 output_dir 必須位於 PxDCA artifact root 之內。",
+            recoverable=False,
+        )
+    if settings.artifacts.enabled:
+        resolved.mkdir(parents=True, exist_ok=True)
     return resolved
 
 
@@ -368,7 +379,7 @@ def _requirement_result(session: dict[str, Any], *, include_questions: bool = Fa
         item.get("id"): item for item in qa_items if isinstance(item, dict) and item.get("id")
     }
     active = by_id.get(state.get("active_question_id"))
-    completed = bool(session.get("artifacts", {}).get("requirements"))
+    completed = isinstance(session.get("requirement_document"), dict)
     result: dict[str, Any] = {
         "status": "completed" if completed else "needs_input",
         "workflow": "requirements",
@@ -383,6 +394,7 @@ def _requirement_result(session: dict[str, Any], *, include_questions: bool = Fa
         ),
         "question_count": len(qa_items),
         "artifacts": session.get("artifacts", {}).get("requirements", []),
+        "document": session.get("requirement_document") if completed else None,
         "updated_at": session.get("updated_at"),
     }
     if include_questions:
@@ -465,7 +477,7 @@ async def requirements_workflow(
 async def _continue_requirements(
     ctx: Context, session: dict[str, Any], answer: str
 ) -> dict[str, Any]:
-    if session.get("artifacts", {}).get("requirements"):
+    if isinstance(session.get("requirement_document"), dict):
         return _requirement_result(session, include_questions=True)
     state = session["requirement_state"]
     if state.get("converged"):
@@ -510,15 +522,18 @@ async def _finalize_requirements(ctx: Context, session: dict[str, Any]) -> dict[
             candidate, session_id=session["session_id"]
         ),
     )
-    output_dir = Path(session["output_dir"])
-    json_path = output_dir / "requirements.json"
-    _atomic_write_json(json_path, payload)
-    rendered = render_requirement_spec(payload, output_dir / "requirement-spec.md")
     session["requirement_document"] = payload
-    session.setdefault("artifacts", {})["requirements"] = [
-        {"kind": "requirements_json", "path": str(json_path)},
-        {"kind": "requirement_specification", **rendered},
-    ]
+    artifacts: list[dict[str, Any]] = []
+    if settings.artifacts.enabled:
+        output_dir = Path(session["output_dir"])
+        json_path = output_dir / "requirements.json"
+        _atomic_write_json(json_path, payload)
+        rendered = render_requirement_spec(payload, output_dir / "requirement-spec.md")
+        artifacts = [
+            {"kind": "requirements_json", "path": str(json_path)},
+            {"kind": "requirement_specification", **rendered},
+        ]
+    session.setdefault("artifacts", {})["requirements"] = artifacts
     session["phase"] = "requirements_completed"
     _save_session(session)
     return _requirement_result(session, include_questions=True)
@@ -538,11 +553,13 @@ async def architecture_workflow(
                     "必須先完成同一個 session_id 的需求書。",
                     recoverable=False,
                 )
-            existing = session.get("artifacts", {}).get("architecture")
-            if existing:
+            existing_document = session.get("architecture_document")
+            existing = session.get("artifacts", {}).get("architecture", [])
+            if isinstance(existing_document, dict):
                 return {
                     "status": "completed", "workflow": "architecture",
                     "session_id": session_id, "artifacts": existing,
+                    "document": existing_document,
                 }
             target = _resolve_output_dir(output_dir, session_id) if output_dir.strip() else Path(session["output_dir"])
             payload, _ = await _sample_validated(
@@ -559,20 +576,23 @@ async def architecture_workflow(
                     candidate, requirements=requirements, session_id=session_id
                 ),
             )
-            json_path = target / "architecture.json"
-            _atomic_write_json(json_path, payload)
-            rendered = render_planning_spec(payload, target / "architecture.md")
-            artifacts = [
-                {"kind": "architecture_json", "path": str(json_path)},
-                {"kind": "architecture_document", **rendered},
-            ]
+            artifacts: list[dict[str, Any]] = []
+            if settings.artifacts.enabled:
+                target.mkdir(parents=True, exist_ok=True)
+                json_path = target / "architecture.json"
+                _atomic_write_json(json_path, payload)
+                rendered = render_planning_spec(payload, target / "architecture.md")
+                artifacts = [
+                    {"kind": "architecture_json", "path": str(json_path)},
+                    {"kind": "architecture_document", **rendered},
+                ]
             session["architecture_document"] = payload
             session.setdefault("artifacts", {})["architecture"] = artifacts
             session["phase"] = "architecture_completed"
             _save_session(session)
             return {
                 "status": "completed", "workflow": "architecture",
-                "session_id": session_id, "artifacts": artifacts,
+                "session_id": session_id, "artifacts": artifacts, "document": payload,
             }
     except WorkflowError as error:
         return _error_result("architecture", error, session_id)
@@ -591,11 +611,14 @@ async def audit_workflow(ctx: Context, *, session_id: str, output_dir: str) -> d
                     "必須先完成同一個 session_id 的需求書與架構書。",
                     recoverable=False,
                 )
-            existing = session.get("artifacts", {}).get("audit")
-            if existing:
+            existing_document = session.get("audit_document")
+            existing = session.get("artifacts", {}).get("audit", [])
+            if isinstance(existing_document, dict):
                 return {
                     "status": "completed", "workflow": "audit",
                     "session_id": session_id, "artifacts": existing,
+                    "document": existing_document,
+                    "conclusion": existing_document.get("conclusion"),
                 }
             target = _resolve_output_dir(output_dir, session_id) if output_dir.strip() else Path(session["output_dir"])
             payload, _ = await _sample_validated(
@@ -610,14 +633,17 @@ async def audit_workflow(ctx: Context, *, session_id: str, output_dir: str) -> d
                     candidate, requirements=requirements, session_id=session_id
                 ),
             )
-            json_path = target / "audit.json"
-            _atomic_write_json(json_path, payload)
-            md_path = target / "audit.md"
-            render_audit(payload, md_path)
-            artifacts = [
-                {"kind": "audit_json", "path": str(json_path)},
-                {"kind": "audit_report", "path": str(md_path)},
-            ]
+            artifacts: list[dict[str, Any]] = []
+            if settings.artifacts.enabled:
+                target.mkdir(parents=True, exist_ok=True)
+                json_path = target / "audit.json"
+                _atomic_write_json(json_path, payload)
+                md_path = target / "audit.md"
+                render_audit(payload, md_path)
+                artifacts = [
+                    {"kind": "audit_json", "path": str(json_path)},
+                    {"kind": "audit_report", "path": str(md_path)},
+                ]
             session["audit_document"] = payload
             session.setdefault("artifacts", {})["audit"] = artifacts
             session["phase"] = "audit_completed"
@@ -625,7 +651,7 @@ async def audit_workflow(ctx: Context, *, session_id: str, output_dir: str) -> d
             return {
                 "status": "completed", "workflow": "audit",
                 "session_id": session_id, "artifacts": artifacts,
-                "conclusion": payload.get("conclusion"),
+                "document": payload, "conclusion": payload.get("conclusion"),
             }
     except WorkflowError as error:
         return _error_result("audit", error, session_id)

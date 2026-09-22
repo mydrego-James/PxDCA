@@ -5,18 +5,18 @@ ROOT = Path(__file__).parent
 
 
 def _read_resource(relative_path: str) -> str:
-    """Read a UTF-8 resource bundled with the LogicMCP server."""
+    """Read a UTF-8 resource bundled with the PxDCA server."""
     return (ROOT / relative_path).read_text(encoding="utf-8")
 
 
-def get_logicmcp_config() -> str:
+def get_pxdca_config() -> str:
     return json.dumps({
-        "server_name": "LogicMCP Federated Server",
+        "server_name": "PxDCA Federated Server",
         "version": "3.0.0",
         "supported_depth_profiles": ["simple", "professional", "consultant"],
         "question_count_policy": "dynamic",
         "requirement_flow": ["consultant_plan", "consultant_answer_review"],
-        "workflow_owner": "logicmcp_server",
+        "workflow_owner": "pxdca_server",
         "membership_aware": False,
     }, ensure_ascii=False)
 

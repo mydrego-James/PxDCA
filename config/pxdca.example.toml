@@ -1,0 +1,17 @@
+[server]
+host = "127.0.0.1"
+port = 8000
+path = "/mcp"
+transport = "http"
+
+[state]
+root = "data/state"
+
+[artifacts]
+enabled = true
+root = "data/artifacts"
+allow_tool_override = false
+
+[logging]
+root = "data/logs"
+level = "INFO"

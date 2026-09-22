@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://logicmcp.local/schemas/technical-alignment-draft-v1.json",
-  "title": "LogicMCP Technical Alignment Draft",
+  "$id": "https://pxdca.local/schemas/technical-alignment-draft-v1.json",
+  "title": "PxDCA Technical Alignment Draft",
   "type": "object",
   "required": [
     "schema_version",

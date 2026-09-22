@@ -1,0 +1,19 @@
+[server]
+host = "127.0.0.1"
+port = 8000
+path = "/mcp"
+transport = "http"
+
+[state]
+# Session state is a core PxDCA capability and must use persistent storage.
+root = "data/state"
+
+[artifacts]
+# Markdown and JSON files are optional side effects; MCP responses remain primary.
+enabled = true
+root = "data/artifacts"
+allow_tool_override = false
+
+[logging]
+root = "data/logs"
+level = "INFO"

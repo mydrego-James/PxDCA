@@ -1,9 +1,9 @@
-# LogicMCP Server — Project Map
+# PxDCA Server — Project Map
 
 ## Root tree
 
 ```text
-LogicMCP_Server/
+PxDCA/
 ├─ server/
 │  ├─ __init__.py
 │  ├─ entrypoint.py
@@ -12,12 +12,18 @@ LogicMCP_Server/
 │  ├─ README.md
 │  ├─ PLAN.md
 │  └─ SKILL.md
-├─ logs/
-│  └─ README.md
-├─ output/
-│  └─ README.md
+├─ config/
+│  ├─ pxdca.toml
+│  └─ pxdca.example.toml
+├─ scripts/
+│  └─ bootstrap.py
+├─ data/                       # runtime only; ignored by Git
+│  ├─ state/
+│  ├─ artifacts/
+│  └─ logs/
 ├─ .dockerignore
 ├─ .env.example
+├─ .python-version
 ├─ .gcloudignore
 ├─ .gitattributes
 ├─ .gitignore
@@ -26,10 +32,13 @@ LogicMCP_Server/
 ├─ Dockerfile
 ├─ fastmcp.json
 ├─ install.bat
+├─ install.sh
+├─ MIGRATION.md
 ├─ MAP.MD
 ├─ README.md
 ├─ requirements.txt
-└─ run.bat
+├─ run.bat
+└─ run.sh
 ```
 
 ## Server tree
@@ -45,6 +54,7 @@ server/
    ├─ mcp_instance.py
    ├─ public_tools.py
    ├─ skill_service.py
+   ├─ settings.py
    ├─ workflow_service.py
    ├─ prompts.py
    ├─ resources.py
@@ -140,8 +150,8 @@ workflow_service.py
 > tools/audit_renderer.py
 > resources/policies/**
 > resources/templates/**
-> MCP_OUTPUT_ROOT
-> MCP_STATE_ROOT
+> PXDCA_ARTIFACT_ROOT
+> PXDCA_STATE_ROOT
 ```
 
 ```text
@@ -174,7 +184,7 @@ generate_requirements(q0)
 > discovery Prompt
 > MCP Sampling
 > consultant plan validator
-> MCP_STATE_ROOT/<session_id>.json
+> PXDCA_STATE_ROOT/<session_id>.json
 > Q1..Qn
 ```
 
@@ -211,25 +221,26 @@ generate_skill(mode, customization, output_dir)
 > tools/SKILL.md
 > template: canonical copy
 > optimized: optional MCP Sampling addition
-> output_dir/SKILL.md
+> data/artifacts/pxdca-pdca/SKILL.md by default
+> Tool-level output_dir is accepted only when external configuration enables overrides
 ```
 
 ## Storage links
 
 ```text
-MCP_OUTPUT_ROOT
-> output/<session_id>/requirements.json
-> output/<session_id>/requirement-spec.md
-> output/<session_id>/architecture.json
-> output/<session_id>/architecture.md
-> output/<session_id>/audit.json
-> output/<session_id>/audit.md
-> output/logicmcp-pdca/SKILL.md
+PXDCA_ARTIFACT_ROOT
+> data/artifacts/<session_id>/requirements.json
+> data/artifacts/<session_id>/requirement-spec.md
+> data/artifacts/<session_id>/architecture.json
+> data/artifacts/<session_id>/architecture.md
+> data/artifacts/<session_id>/audit.json
+> data/artifacts/<session_id>/audit.md
+> data/artifacts/pxdca-pdca/SKILL.md
 ```
 
 ```text
-MCP_STATE_ROOT
-> output/.logicmcp/sessions/<session_id>.json
+PXDCA_STATE_ROOT
+> data/state/<session_id>.json
 ```
 
 ## Configuration links
@@ -240,7 +251,7 @@ run.bat > .env + install.bat
 fastmcp.json > requirements.txt
 Dockerfile > requirements.txt + server/ + tools/SKILL.md
 .env > run.bat + compose.yaml
-compose.yaml > Dockerfile + logs/ + output/
+compose.yaml > Dockerfile + config/pxdca.toml + Docker named volumes
 .dockerignore > Docker build context
 .gcloudignore > gcloud upload context
 .gitignore > Git working tree

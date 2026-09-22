@@ -1,8 +1,8 @@
-# LogicMCP workflow
+# PxDCA workflow
 
 ## Public MCP surface
 
-LogicMCP registers exactly four MCP Tools:
+PxDCA registers exactly four MCP Tools:
 
 - `generate_requirements`
 - `generate_architecture`

@@ -68,7 +68,7 @@ async def run_audit(
 @mcp.tool(
     name="generate_skill",
     description=(
-        "產生可選的 LogicMCP SKILL.md。template 模式輸出 Server canonical 模板；"
+        "產生可選的 PxDCA SKILL.md。template 模式輸出 Server canonical 模板；"
         "optimized 模式透過 Client LLM Sampling 附加情境化指引，但固定保留兩種 PDCA"
         "差異、前三個 Tool 的用途與 session_id 接續規則。此 Tool 不建立需求 session。"
     ),
