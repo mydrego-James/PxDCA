@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pxdca.local/schemas/audit-draft-v1.json",
+  "$id": "https://pxdca.local/schemas/audit-draft-v1.1.json",
   "title": "PxDCA Audit Draft",
   "type": "object",
   "required": [
@@ -14,10 +14,11 @@
     "findings",
     "blockers",
     "conclusion",
+    "handoff",
     "limitations"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "stage": {"const": "audit_draft"},
     "status": {"const": "draft"},
     "source_requirement_session_id": {"type": "string", "minLength": 1},
@@ -53,6 +54,18 @@
     },
     "blockers": {"type": "array", "items": {"type": "string"}},
     "conclusion": {"enum": ["draft_pending_review", "draft_blocked", "draft_ready_for_review"]},
+    "handoff": {
+      "type": "object",
+      "required": ["disposition", "recommended_owner", "next_purpose", "required_actions", "evidence_refs", "unresolved_risks"],
+      "properties": {
+        "disposition": {"enum": ["ready_for_handoff", "revise_pm", "revise_pg", "user_decision_required", "hold"]},
+        "recommended_owner": {"enum": ["requester", "pm", "pg", "executor", "external"]},
+        "next_purpose": {"type": "string", "minLength": 1},
+        "required_actions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "unresolved_risks": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
     "limitations": {"type": "array", "items": {"type": "string"}}
   }
 }

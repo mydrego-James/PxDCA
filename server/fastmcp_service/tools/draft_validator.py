@@ -6,13 +6,15 @@ def _has_text(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def _validate_common(payload: dict[str, Any], required: set[str], stage: str) -> list[str]:
+def _validate_common(
+    payload: dict[str, Any], required: set[str], stage: str, schema_version: str = "1.0"
+) -> list[str]:
     errors: list[str] = []
     missing = sorted(required - payload.keys())
     if missing:
         errors.append("missing fields: " + ", ".join(missing))
-    if payload.get("schema_version") != "1.0":
-        errors.append("schema_version must be '1.0'")
+    if payload.get("schema_version") != schema_version:
+        errors.append(f"schema_version must be '{schema_version}'")
     if payload.get("stage") != stage:
         errors.append(f"stage must be '{stage}'")
     if payload.get("status") != "draft":
@@ -144,9 +146,11 @@ def validate_audit_draft(payload: dict[str, Any]) -> dict[str, Any]:
         payload,
         {
             "schema_version", "stage", "status", "source_requirement_session_id", "project_name",
-            "audit_basis", "coverage", "findings", "blockers", "conclusion", "limitations",
+            "audit_basis", "coverage", "findings", "blockers", "conclusion", "handoff",
+            "limitations",
         },
         "audit_draft",
+        "1.1",
     )
     if not isinstance(payload.get("audit_basis"), list):
         errors.append("audit_basis must be an array")
@@ -184,6 +188,26 @@ def validate_audit_draft(payload: dict[str, Any]) -> dict[str, Any]:
         errors.append("blockers must be an array")
     if payload.get("conclusion") not in {"draft_pending_review", "draft_blocked", "draft_ready_for_review"}:
         errors.append("invalid conclusion")
+    handoff = payload.get("handoff")
+    if not isinstance(handoff, dict):
+        errors.append("handoff must be an object")
+    else:
+        if handoff.get("disposition") not in {
+            "ready_for_handoff", "revise_pm", "revise_pg", "user_decision_required", "hold",
+        }:
+            errors.append("handoff has invalid disposition")
+        if handoff.get("recommended_owner") not in {
+            "requester", "pm", "pg", "executor", "external",
+        }:
+            errors.append("handoff has invalid recommended_owner")
+        if not _has_text(handoff.get("next_purpose")):
+            errors.append("handoff.next_purpose is required")
+        for name in ("required_actions", "evidence_refs", "unresolved_risks"):
+            values = handoff.get(name)
+            if not isinstance(values, list) or not all(_has_text(value) for value in values):
+                errors.append(f"handoff.{name} must be a text array")
+        if handoff.get("disposition") == "ready_for_handoff" and payload.get("blockers"):
+            errors.append("ready_for_handoff is invalid when blockers exist")
     if not isinstance(payload.get("limitations"), list):
         errors.append("limitations must be an array")
     return {"valid": not errors, "errors": errors}

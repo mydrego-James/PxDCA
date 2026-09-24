@@ -26,6 +26,8 @@ REQUIRED_CORE_MARKERS = {
     "generate_architecture",
     "run_audit",
     "session_id",
+    "Purpose × Response",
+    "Handoff",
 }
 
 

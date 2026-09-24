@@ -8,7 +8,7 @@
 
 > **改名註記：** 本專案原名為 `LogicMCP_Server`，現已正式改名為 `PxDCA`。正式名稱、設定與路徑均使用 PxDCA；舊 `MCP_*` 執行環境變數僅保留有限期讀取相容性並會產生棄用警告，其他舊名稱只保留在歷史或遷移說明中。
 
-PxDCA 是以 [FastMCP 3](https://gofastmcp.com/) 建置的文字規劃與邊界校準服務。它不負責撰寫產品程式碼，而是透過 MCP 與背後的 Prompt TXT，讓 AI 以有依據、可追溯且不過度延伸的方式建立需求與技術規劃。前三個公開 MCP Tools 產生需求書、架構書與 PM／PG 對齊報告；第 4 個 Tool 產生可選的 `SKILL.md`。
+PxDCA 是以 [FastMCP 3](https://gofastmcp.com/) 建置的文字規劃與邊界校準服務。它不負責撰寫產品程式碼，而是透過 MCP 與背後的 Prompt TXT，讓 AI 以有依據、可追溯且不過度延伸的方式建立需求與技術規劃。前三個公開 MCP Tools 產生需求書、架構書與 PM／PG 對齊及責任移交建議；第 4 個 Tool 產生可選的 `SKILL.md`。專案理念與其他相關工具可由 [PDCA for Responsible AI](https://mydrego-james.github.io/) 進入。
 
 - `generate_requirements`：建立並接續需求訪談，完成後產生需求書。
 - `generate_architecture`：根據已完成的需求工作階段產生技術選型與架構規劃書。
@@ -31,9 +31,14 @@ AI 已經能快速產生程式碼、文件、架構與測試，軟體開發的�
 - 工作分派後，執行者只看到局部任務，遺失上層目標、背景與限制。
 - 產出完成後缺乏可證偽的品質門禁，結果「看似完成」卻無法驗證。
 
-PxDCA 的目的不是把 PDCA 寫成一條強制流水線，也不是取代需求提出者、專案經理、架構師或 AI。PDCA 在這裡是一種 AI 必須持續具備的理解力：先掌握現況與目標，再依證據行動；產生結果後重新對照來源，必要時修正、補問或重新規劃。這種精神從 Q0 與 QA 階段就已經開始存在。
+PxDCA 的目的不是把 PDCA 寫成一條強制流水線，也不是取代需求提出者、專案經理、架構師或 AI。PDCA 在這裡是一種 AI 必須持續具備的判斷力：建立目的、依證據發展回應、挑戰目的與回應的連接，最後接受、修正、暫停或交付責任。這種精神從 Q0 與 QA 階段就已經存在。
 
-PxDCA 中的 `x` 有兩種互相連接的含意：
+必須分開理解兩個維度：
+
+- **MCP FLOW** 有先後依賴：需求基線完成後才能建立技術回應，兩者完成後才能進行上下對齊。
+- **PDCA 精神** 存在於每個工作狀態的判斷中，但不要求每個狀態另外產生 P、D、C、A 四份文件，也不要求 AI 機械敘述四個步驟。
+
+PxDCA 中的 `x` 表示多型態脈絡，可表達職務焦點、任務層次、領域焦點與責任移交狀態。目前最明確的兩種展開是：
 
 1. **職務焦點：PM、PG、PQ**
 
@@ -43,7 +48,9 @@ PxDCA 中的 `x` 有兩種互相連接的含意：
 
 2. **任務交付展開：`P1 / D1 / C1 / A1 → P2 ...`**
 
-   前一項工作整理出的目標、證據、決策與檢查結果，可以成為下一項工作的輸入。這表示任務之間要有可追溯的交付關係，不表示 MCP Server 必須依序執行一套固定的 PDCA 狀態機。
+   前一項工作整理出的目的、證據、決策與檢查結果，可以成為下一項工作的輸入。這表示任務之間要有可追溯的責任交付，不表示 MCP Server 必須依序執行一套固定的 PDCA 狀態機，也不表示每個 `P_x` 都必須完成自己的 DCA。
+
+目的與回應採 **Purpose × Response** 關係：一個目的可能需要多個回應，一個回應也可能同時支援多個目的。PM、PG、PQ 是可切換的工作狀態，不是永久職稱；同一個 AI 可以切換，但必須保留當前邊界與證據來源。
 
 因此目前的核心關係是：
 
@@ -55,9 +62,14 @@ PG：技術選型與架構規劃文字
           │ 需求與技術的對應證據
           ▼
 PQ：檢查 PM ↔ PG 的上下連接與偏離
+          │ 處置、下一目的、依據、風險與建議承接者
+          ▼
+Handoff：責任移交建議；不是第 5 個 Tool，也不自動建立下一個 session
 ```
 
-只有 PM 與 PG 負責產生主要規劃內容；PQ 負責對齊、指出缺口與修正方向。整個過程以文字為產物，以來源、回答、決策與對應關係為證據，避免 AI 自行補充未經授權的需求或技術範圍。
+只有 PM 與 PG 負責產生主要規劃內容；PQ 負責對齊、指出缺口、修正方向與 Handoff。整個過程以文字為產物，以來源、回答、決策與對應關係為證據，避免 AI 自行補充未經授權的需求或技術範圍。
+
+目前版本聚焦軟體、網站、API、資料、整合與功能開發前的文字規劃。報告、RAG、知識管理等其他領域是這套多型態模型可延伸的方向，但尚不是目前內建模板已承諾的能力。
 
 > AI 負責高速推進，PxDCA 負責鎖定邊界與工程方向。
 
@@ -261,7 +273,7 @@ Server 會回傳 `session_id`、目前問題與訪談狀態。回答問題時，
 
 ## 4. 目前架構
 
-PxDCA 對 MCP Client 公開三個文字產物操作與一個 Skill 產生工具。MCP Tools 是呼叫介面；真正讓 AI 理解 PM、PG、PQ 邊界與 PDCA 精神的是 Server 內部的 Prompt TXT。Policies、Profiles、Schemas、Validators、狀態轉移與 Renderers 同樣屬於私有實作，不會註冊成額外的 MCP Prompts、Resources 或 Tools。
+PxDCA 對 MCP Client 公開三個文字產物操作與一個 Skill 產生工具。MCP Tools 是呼叫介面；真正讓 AI 理解 PM、PG、PQ 邊界與 PDCA 精神的是 Server 內部的 Prompt TXT。共用的 PDCA 判斷提示會注入需求、技術規劃與 PQ 稽核階段，並明確禁止把它解讀成第二套工作流或強制四步敘事。Policies、Profiles、Schemas、Validators、狀態轉移與 Renderers 同樣屬於私有實作，不會註冊成額外的 MCP Prompts、Resources 或 Tools。
 
 ```text
 VS Code／其他 MCP Client
@@ -302,7 +314,11 @@ PG 架構書
 run_audit
  ↓ 以 PQ 視角對齊 PM 與 PG
 對齊與稽核報告
+ ↓
+Handoff：ready／修正 PM／修正 PG／請使用者決定／暫停
 ```
+
+這段順序是文件相依的 MCP FLOW；PDCA 則是 AI 在每一段建立目的、發展回應、檢查依據並決定下一步的判斷精神。Handoff 是 `run_audit` 的結構化輸出，不是額外公開 Tool，也不會自動建立下一個工作階段。
 
 MCP 連線本身不是工作狀態。Server 只保存通過驗證的狀態，並以 `session_id` 恢復流程。工作階段預設位於 `data/state/`；選用的需求、架構及稽核檔案位於 `data/artifacts/<session_id>/`；Server logs 位於 `data/logs/`。實際位置均可由 `config/pxdca.toml` 或 `PXDCA_*` 環境變數覆寫。
 
@@ -340,13 +356,13 @@ compose.yaml                Docker Compose service
 
 ## 5. 附加工具：SKILL.md
 
-[tools/SKILL.md](tools/SKILL.md) 是可獨立交給 AI 讀取的 canonical 模板。它以原始 PDCA 精神規範三件事：
+[tools/SKILL.md](tools/SKILL.md) 是可獨立交給 AI 讀取的 canonical 模板。它只規範三件事：
 
-1. 讓 AI 分辨原始 `Plan → Do → Check → Act`，以及 PxDCA（原 PxDCA）在目前 MCP 工作流中的 `Problem/Purpose → Design → Check/Challenge → Action`。
+1. 讓 AI 理解原始 `Plan → Do → Check → Act`，以及 PxDCA 用於 AI 規劃與責任移交的 `Problem/Purpose → Design/Develop response → Check/Challenge → Action/Assume responsibility`；兩者共享判斷精神，但不是同一組流程字義。
 2. 讓 AI 依目前要做的工作，檢查既有需求、規格、規劃及架構內容是否足夠，而不是只看檔名。
 3. 當資料不足且使用者同意時，讓 AI 正確使用 `generate_requirements`、`generate_architecture`、`run_audit` 與 `session_id` 接續規則。
 
-Skill 不是持久服務、背景監控器或 MCP 必要依賴。使用者可以直接呼叫 MCP，也可以將 `SKILL.md` 交給 AI 使用。前三個開發工作流不依賴 Skill。
+Skill 不是持久服務、背景監控器、工作流引擎或 MCP 必要依賴。使用者可以直接呼叫 MCP，也可以將 `SKILL.md` 交給 AI 使用。前三個規劃工作流不依賴 Skill。
 
 ### Skill 不是必要流程
 
@@ -357,7 +373,7 @@ PxDCA 的安裝、啟動及前三個開發工作流都不要求使用 Skill。�
 - 在支援 Skill 的工具中引用 `SKILL.md`。
 - 完全不使用 Skill。
 
-`SKILL.md` 只是讓 AI 預先理解兩種 PDCA 的差異、如何判斷目前狀態是否足夠，以及資料不足時如何正確使用 PxDCA MCP Tools。
+`SKILL.md` 只是讓 AI 預先理解兩種 PDCA 解讀的關係與差異、如何判斷目前狀態是否足夠，以及資料不足時如何正確使用 PxDCA MCP Tools。它同時說明 MCP FLOW 與 PDCA 精神是不同維度，PM、PG、PQ 不必各自產生一套 DCA 文件。
 
 ### 在 AI 工具中載入 Skill
 
@@ -387,7 +403,7 @@ SKILL.md
 → 支援名稱呼叫時，可使用 /pxdca-pdca 或 /<自訂技能名稱>
 ```
 
-在 PxDCA 中，MCP Server 提供可執行的需求、架構、稽核與 Skill 產生能力；`SKILL.md` 則讓 AI 在本地或沙盒上下文中理解兩種 PDCA、判斷目前狀態，以及在必要時正確呼叫 MCP。兩者可以一起使用，也可以依使用者環境分開使用。
+在 PxDCA 中，MCP Server 提供可執行的需求、架構、稽核、Handoff 與 Skill 產生能力；`SKILL.md` 則讓 AI 在本地或沙盒上下文中理解兩種 PDCA 解讀、判斷目前狀態，以及在必要時正確呼叫 MCP。兩者可以一起使用，也可以依使用者環境分開使用。
 
 若使用的 IDE 或網路 Chat 不支援 Skill，也可以將 `SKILL.md` 上傳、拖入對話或貼入內容，明確要求 LLM 先讀取再處理任務：
 
@@ -421,7 +437,7 @@ SKILL.md
 }
 ```
 
-情境化內容只能附加，不能覆蓋兩種 PDCA 的差異、前三個開發工具的用途或 `session_id` 規則。`generate_skill` 不建立需求 session。
+情境化內容只能附加，不能覆蓋兩種 PDCA 解讀、Purpose × Response、Handoff、前三個開發工具的用途或 `session_id` 規則。`generate_skill` 不建立需求 session。
 
 `generate_skill` 一定回傳 Skill 內容；`artifacts.enabled=true` 時才另外產生 `SKILL.md` 檔案。它不會替任何 IDE、Agent 或 Chat 自動安裝、註冊或啟用 Skill。產生後仍需依使用平台的方式引用：
 
@@ -452,17 +468,17 @@ generate_skill
 
    讓技術選型、模組責任與架構決策逐項對應 PM 需求；技術規劃只能在需求授權範圍內展開。
 
-4. **強化 PQ 上下對齊**
+4. **驗證 PQ Handoff 的實際案例**
 
-   PQ 不建立另一份獨立規劃，而是確認 PM 與 PG 的覆蓋、衝突、假設與追溯關係，並指出修正應回到需求端或技術端。
+   目前 PQ 已輸出處置、下一目的、必要動作、證據、未解風險與建議承接者。後續以實際案例驗證 `ready_for_handoff`、修正 PM、修正 PG、請使用者決定與暫停等判斷是否清楚。
 
-5. **保存任務交付展開的依據**
+5. **研究跨任務的父子工作階段**
 
-   保存 `P1 / D1 / C1 / A1 → P2 ...` 之間的目標、證據、決策與交付關係，讓下一項文字規劃知道自己承接了什麼。
+   目前 Handoff 只保存責任移交建議，不會自動建立下一個 session。未來再研究如何保存 `P1 / D1 / C1 / A1 → P2 ...` 的父子關係，同時避免把 PDCA 精神硬化成狀態機。
 
 6. **擴充 Profiles、Templates、Clients 與部署驗證**
 
-   驗證不同領域的能力 TXT、需求與架構文件模板，以及 VS Code 以外的 MCP Clients、模型與 Agent runtime。
+   先驗證不同軟體領域的能力 TXT、需求與架構文件模板，以及 VS Code 以外的 MCP Clients、模型與 Agent runtime；報告、RAG、知識管理等跨領域模板另列後續擴充，不宣稱為目前完成能力。
 
 7. **FastMCP 4 獨立分支評估**
 

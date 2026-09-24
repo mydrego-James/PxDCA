@@ -619,6 +619,7 @@ async def audit_workflow(ctx: Context, *, session_id: str, output_dir: str) -> d
                     "session_id": session_id, "artifacts": existing,
                     "document": existing_document,
                     "conclusion": existing_document.get("conclusion"),
+                    "handoff": existing_document.get("handoff"),
                 }
             target = _resolve_output_dir(output_dir, session_id) if output_dir.strip() else Path(session["output_dir"])
             payload, _ = await _sample_validated(
@@ -652,6 +653,7 @@ async def audit_workflow(ctx: Context, *, session_id: str, output_dir: str) -> d
                 "status": "completed", "workflow": "audit",
                 "session_id": session_id, "artifacts": artifacts,
                 "document": payload, "conclusion": payload.get("conclusion"),
+                "handoff": payload.get("handoff"),
             }
     except WorkflowError as error:
         return _error_result("audit", error, session_id)

@@ -135,12 +135,20 @@ async def _sampling_handler(messages, params, context) -> str:
     if "Audit Draft Reviewer" in system:
         requirements = request["requirement_specification"]
         return json.dumps({
-            "schema_version": "1.0", "stage": "audit_draft", "status": "draft",
+            "schema_version": "1.1", "stage": "audit_draft", "status": "draft",
             "source_requirement_session_id": requirements["source_requirement_session_id"],
             "project_name": "測試專案", "audit_basis": ["requirements", "architecture"],
             "coverage": [{"requirement_id": "REQ-01", "status": "covered", "evidence": ["architecture"], "gap": ""}],
             "findings": [{"finding_id": "AUD-001", "type": "traceability", "severity": "observation", "description": "完整", "recommendation": "維持", "requirement_ids": ["REQ-01"]}],
             "blockers": [], "conclusion": "draft_ready_for_review", "limitations": [],
+            "handoff": {
+                "disposition": "ready_for_handoff",
+                "recommended_owner": "executor",
+                "next_purpose": "依確認基線承接下一項交付工作",
+                "required_actions": ["承接需求與架構基線"],
+                "evidence_refs": ["REQ-01", "AUD-001"],
+                "unresolved_risks": [],
+            },
         }, ensure_ascii=False)
     raise AssertionError("unexpected sampling stage")
 
@@ -206,6 +214,20 @@ class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
             prompts.requirement_interview("quality_engineer"),
         )
 
+    def test_shared_pdca_spirit_is_injected_into_workflow_prompts(self) -> None:
+        marker = "[Shared PxDCA Judgment Discipline]"
+        workflow_prompts = [
+            prompts.discovery_prompt("{}"),
+            prompts.consultant_plan_review(),
+            prompts.requirement_interview("quality_engineer"),
+            prompts.batch_audit_draft(),
+            prompts.technical_alignment_draft(capability_profiles=["quality_engineer"]),
+            prompts.iso_audit_draft(),
+        ]
+        for prompt in workflow_prompts:
+            self.assertEqual(prompt.count(marker), 1)
+            self.assertIn("not a second workflow", prompt)
+
     async def test_public_contract_is_exactly_four_tools(self) -> None:
         async with Client(mcp) as client:
             tools = await client.list_tools()
@@ -261,6 +283,8 @@ class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
                 "generate_architecture",
                 "run_audit",
                 "session_id",
+                "Purpose × Response",
+                "Handoff",
             ]
             for item in required:
                 self.assertIn(item, canonical_content)
@@ -301,11 +325,16 @@ class PublicWorkflowTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(architecture["status"], "completed")
             audit = (await client.call_tool("run_audit", {"session_id": session_id})).data
             self.assertEqual(audit["conclusion"], "draft_ready_for_review")
+            self.assertEqual(audit["handoff"]["disposition"], "ready_for_handoff")
 
         state_path = Path(os.environ["PXDCA_STATE_ROOT"]) / f"{session_id}.json"
         state = json.loads(state_path.read_text(encoding="utf-8"))
         self.assertEqual(state["phase"], "audit_completed")
         self.assertEqual(state["requirement_state"]["turn_count"], 3)
+        self.assertEqual(
+            state["audit_document"]["handoff"]["recommended_owner"],
+            "executor",
+        )
 
 
 if __name__ == "__main__":

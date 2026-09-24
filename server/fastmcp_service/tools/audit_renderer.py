@@ -40,6 +40,22 @@ def _finding_lines(values: list[Any]) -> list[str]:
     return lines
 
 
+def _handoff_lines(value: Any) -> list[str]:
+    if not isinstance(value, dict):
+        return ["未提供責任移交建議。"]
+    actions = "；".join(str(item) for item in value.get("required_actions", [])) or "無"
+    evidence = "、".join(str(item) for item in value.get("evidence_refs", [])) or "無"
+    risks = "；".join(str(item) for item in value.get("unresolved_risks", [])) or "無"
+    return [
+        f"處置：{value.get('disposition', 'hold')}",
+        f"建議承接者：{value.get('recommended_owner', 'requester')}",
+        f"下一目的：{value.get('next_purpose', '')}",
+        f"必要動作：{actions}",
+        f"依據：{evidence}",
+        f"未解風險：{risks}",
+    ]
+
+
 def render_audit(payload: dict[str, Any], output_path: str | Path) -> str:
     template = Template((ROOT / "resources" / "templates" / "audit" / "iso-aligned-audit.md").read_text(encoding="utf-8"))
     findings = payload.get("findings", [])
@@ -56,6 +72,7 @@ def render_audit(payload: dict[str, Any], output_path: str | Path) -> str:
         "other_findings": _bullets(_finding_lines(other_findings)),
         "coverage": _bullets(_coverage_lines(payload.get("coverage", []))),
         "audit_conclusion": payload.get("conclusion", "draft_pending_review"),
+        "handoff": _bullets(_handoff_lines(payload.get("handoff"))),
     }
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)

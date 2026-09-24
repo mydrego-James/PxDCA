@@ -19,3 +19,6 @@ ${coverage}
 
 ## 結論
 ${audit_conclusion}
+
+## 下一步與責任移交
+${handoff}

@@ -9,6 +9,11 @@ def _read_prompt(relative_path: str) -> str:
     return (ROOT / "prompts" / relative_path).read_text(encoding="utf-8")
 
 
+def _with_pdca_spirit(template: str) -> str:
+    """Inject one shared judgment discipline without creating another workflow."""
+    return f"{_read_prompt('pdca_spirit.txt').rstrip()}\n\n{template.lstrip()}"
+
+
 def _load_capability_focus(profile: str) -> str:
     fallback = "[Capability Focus] General software requirement analysis."
     profiles_path = ROOT / "resources" / "templates" / "profiles.json"
@@ -48,7 +53,7 @@ def _load_profile_policy() -> str:
 def discovery_prompt(available_templates_json: str = "{}") -> str:
     """Return the consultant contract for building the initial requirement boundary map."""
     logger.info("[PROMPT] Loading consultant discovery contract")
-    template = _read_prompt("discovery.txt")
+    template = _with_pdca_spirit(_read_prompt("discovery.txt"))
     return (
         template
         .replace("{available_templates_json}", available_templates_json)
@@ -59,7 +64,7 @@ def discovery_prompt(available_templates_json: str = "{}") -> str:
 def consultant_plan_review() -> str:
     """Return the release-gate contract for filtering an initial plan before display."""
     logger.info("[PROMPT] Loading consultant plan release-gate contract")
-    return _read_prompt("consultant_plan_review.txt").replace(
+    return _with_pdca_spirit(_read_prompt("consultant_plan_review.txt")).replace(
         "{profile_policy_json}", _load_profile_policy()
     )
 
@@ -68,7 +73,7 @@ def requirement_interview(
 ) -> str:
     """Return one consultant answer-review contract with a focused capability."""
     logger.info(f"[PROMPT] Loading consultant answer review with capability={profile}")
-    template = _read_prompt("requirement_interview.txt")
+    template = _with_pdca_spirit(_read_prompt("requirement_interview.txt"))
     return template.replace("{capability_focus}", _load_capability_focus(profile))
 
 
@@ -80,7 +85,7 @@ def consultant_reconciliation() -> str:
 def batch_audit_draft(profile: str = "simple") -> str:
     """Return the bounded contract for the final Requirement Batch Audit (Stage A)."""
     logger.info(f"[PROMPT] Loading 'batch_audit_draft' with profile={profile}")
-    template = _read_prompt("batch_audit_draft.txt")
+    template = _with_pdca_spirit(_read_prompt("batch_audit_draft.txt"))
     return template.replace("{profile}", profile)
 
 def technical_alignment_draft(
@@ -93,7 +98,7 @@ def technical_alignment_draft(
         "[PROMPT] Loading 'technical_alignment_draft' "
         f"with profile={profile} capabilities={capability_profiles}"
     )
-    template = _read_prompt("technical_alignment_draft.txt")
+    template = _with_pdca_spirit(_read_prompt("technical_alignment_draft.txt"))
     capability_focus = "\n\n".join(
         f"Capability source `{capability}`:\n{_load_capability_focus(capability)}"
         for capability in capability_profiles
@@ -115,7 +120,7 @@ def technical_alignment_draft(
 def iso_audit_draft() -> str:
     """Return the bounded role contract for an ISO-aligned audit draft."""
     logger.info("[PROMPT] Loading ISO-aligned audit draft contract")
-    return _read_prompt("iso_audit_draft.txt")
+    return _with_pdca_spirit(_read_prompt("iso_audit_draft.txt"))
 
 
 def system_design_draft() -> str:
